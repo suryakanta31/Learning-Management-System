@@ -1,0 +1,111 @@
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'poppins', sans-serif;
+}
+body{
+  background-color: #9ceced;
+  /*background-image: url("src/images/bg.jpg");*/
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+a{
+  text-decoration: none;
+  color: inherit;
+}
+.navbar{
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 8%;
+  background-color: #daf1ee;
+}
+.navbar img{
+  width: 60px;
+  cursor: pointer;
+  
+}
+.navbar ul{
+padding: 10px 30px;
+border-radius: 30px;
+box-shadow: 0 0 30px 0 rgba(65, 62, 62, 0.1);
+}
+.navbar ul li{
+  display: inline-block;
+  margin: 0 10px;
+  padding: 5px 10px;
+}
+a.active{
+  color: rgb(14, 14, 14);
+
+}
+.navbar button {
+  padding: 10px 20px;
+  border-radius: 25px;
+  border: 0;
+  background-color: #4aa6f1;
+  color: #ffffff;
+  font-size: 16px;
+  outline: 0;
+  cursor: pointer;
+  margin-right: 12px; 
+}
+
+.navbar button:last-child {
+  margin-right: 0; 
+}
+
+
+.container{
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80vh;
+}
+
+.container h1{
+  font-size: 70px;
+  font-weight: 500;
+}
+
+
+/*     -------------------------------------      */
+/* === Base === */
+
+/* ---------- Admin Login ---------- */
+.admin-login {
+  width: 400px;
+  margin: 80px auto;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  text-align: center;
+}
+
+.admin-login-form input {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.admin-login-form button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.admin-login-form button:hover {
+  background-color: #0056b3;
+}
+
