@@ -2,12 +2,24 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <!-- Using Vite alias to load logo from src/images -->
+    <link rel="icon" type="image/png" href="/src/images/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    <title>Kapil IT LMS</title>
+
+    <meta name="description" content="Kapil IT LMS - Learning Management System" />
+    <meta name="author" content="Kapil IT" />
   </head>
+
   <body>
     <div id="root"></div>
+
+    <!-- Optional: Preloader -->
+    <div id="preloader" style="display:none; text-align:center; margin-top:40vh;">
+      <img src="/src/images/logo.png" alt="Kapil IT LMS Logo" width="100" />
+      <h2 style="font-family: Arial, sans-serif; color:#333;">Loading Kapil IT LMS...</h2>
+    </div>
+
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -57,36 +57,35 @@ const AdminDashboard = () => {
   const toggleDropdown = (key) => {
     setDropdownOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
-
-  const menuItems = [
-    { label: "Dashboard", icon: "bi-speedometer2", path: "/admin" },
-    {
-      label: "Students",
-      icon: "bi-person",
-      key: "students",
-      dropdown: [
-        { label: "Add & Manage Students", path: "/admin/addstudent" },
-      ],
-    },
-    {
-      label: "Trainers",
-      icon: "bi-person-badge",
-      key: "trainers",
-      dropdown: [
-        { label: "Add & Manage Trainers", path: "/admin/addtrainer" },
-       
-      ],
-    },
-    {
-      label: "Courses",
-      icon: "bi-journal-text",
-      key: "courses",
-      dropdown: [
-        { label: "Add & Manage Course", path: "/admin/managecourse" },
-        
-      ],
-    },
-  ];
+const menuItems = [
+  { label: "Dashboard", icon: "bi-speedometer2", path: "/admin" },
+  {
+    label: "Students",
+    icon: "bi-person",
+    key: "students",
+    dropdown: [{ label: "Add & Manage Students", path: "/admin/addstudent" }],
+  },
+  {
+    label: "Trainers",
+    icon: "bi-person-badge",
+    key: "trainers",
+    dropdown: [{ label: "Add & Manage Trainers", path: "/admin/addtrainer" }],
+  },
+  {
+    label: "Courses",
+    icon: "bi-journal-text",
+    key: "courses",
+    dropdown: [{ label: "Add & Manage Course", path: "/admin/managecourse" }],
+  },
+  {
+    label: "Reports & Analytics",
+    icon: "bi-bar-chart-line",
+    key: "reports",
+    dropdown: [
+      { label: "View Reports & Analytics", path: "/admin/reportsanalytics" },
+    ],
+  },
+];
 
   // Chart data based on totals
   const chartData = [

@@ -38,6 +38,7 @@ import {
   Route,
   RouterProvider,
 } from "react-router-dom";
+import './index.css';
 
 // ===================== Pages =====================
 // Admin
@@ -46,6 +47,7 @@ import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import AddTrainer from "./Pages/Admin/AddTrainer";
 import AddStudent from "./Pages/Admin/AddStudent";
 import ManageCourse from "./Pages/Admin/ManageCourse";
+import ReportsAnalytics from "./Pages/Admin/ReportsAnalytics";
 
 // Trainer
 import TrainerLogin from "./Pages/Trainer/TrainerLogin";
@@ -58,6 +60,13 @@ import Schedule from "./Pages/Trainer/Schedule";
 
 // Student
 import StudentLogin from "./Pages/Student/StudentLogin";
+import StudentDashboard from "./Pages/Student/StudentDashboard";
+import SMyCourses from "./Pages/Student/SMyCourses";
+import Sessions from "./Pages/Student/Sessions";
+import Assignments from "./Pages/Student/Assignments";
+import Certificates from "./Pages/Student/Certificates";
+import TrainerFeedback from "./Pages/Student/TrainerFeedback";
+//import Notifications from "./Pages/Student/Notifications";
 
 // Others
 import Contact from "./Pages/Contact";
@@ -81,6 +90,7 @@ const App = () => {
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
           <Route path="managecourse" element={<ManageCourse />} />
+          <Route path="reportsanalytics" element={<ReportsAnalytics />} />
         </Route>
 
         {/* ---------- Trainer Protected Routes ---------- */}
@@ -90,6 +100,17 @@ const App = () => {
           <Route path="attendance" element={<Attendance />} />
           <Route path="feedback" element={<Feedback />} />
           <Route path="schedule" element={<Schedule />} />
+        </Route>
+
+        {/* ---------- Student Protected Routes ---------- */}
+        <Route path="student" element={<StudentDashboard />}>
+          <Route path="smycourses" element={<SMyCourses />} />
+          <Route path="Sessions" element={<Sessions />} />
+         {/*<Route path="notifications" element={<Notifications />} />*/}
+          <Route path="assignments" element={<Assignments />} />
+          <Route path="certificates" element={<Certificates />} />
+          <Route path="feedback" element={<TrainerFeedback />} />
+          
         </Route>
 
         {/* ---------- 404 Fallback ---------- */}
