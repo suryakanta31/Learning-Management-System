@@ -23,57 +23,33 @@ function Navbar() {
 
 export default Navbar */
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
+import "../index.css"; // make sure this path is correct
 
 function Navbar() {
-  const navigate = useNavigate();
-
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
-      <div className="container-fluid">
-        {/* Logo */}
-        <NavLink className="navbar-brand fw-bold" to="/">
-          <img src="src/images/logo.png" alt="LOGO" width="130" />
+    <nav className="navbar">
+      {/* Left: Logo */}
+      <div className="navbar-left">
+        <NavLink to="/" className="navbar-logo">
+          <img src="src/images/logo.png" alt="LOGO" />
         </NavLink>
+      </div>
 
-        {/* Toggle button for mobile */}
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-          aria-controls="navbarNav"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-
-        {/* Navbar links */}
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item mx-1">
-              <NavLink to="/adminlogin" className="btn btn-outline-primary">
-                Admin Login
-              </NavLink>
-            </li>
-            <li className="nav-item mx-1">
-              <NavLink to="/trainerlogin" className="btn btn-outline-success">
-                Trainer Login
-              </NavLink>
-            </li>
-            <li className="nav-item mx-1">
-              <NavLink to="/studentlogin" className="btn btn-outline-warning">
-                Student Login
-              </NavLink>
-            </li>
-            <li className="nav-item mx-1">
-              <NavLink to="/contact" className="btn btn-outline-info">
-                Contact
-              </NavLink>
-            </li>
-          </ul>
-        </div>
+      {/* Right: Navigation Links */}
+      <div className="navbar-right">
+        <NavLink to="/adminlogin" className="nav-btn admin">
+          Admin Login
+        </NavLink>
+        <NavLink to="/trainerlogin" className="nav-btn trainer">
+          Trainer Login
+        </NavLink>
+        <NavLink to="/studentlogin" className="nav-btn student">
+          Student Login
+        </NavLink>
+        <NavLink to="/contact" className="nav-btn contact">
+          Contact
+        </NavLink>
       </div>
     </nav>
   );

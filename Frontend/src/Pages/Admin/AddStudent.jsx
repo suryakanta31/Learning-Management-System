@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
+import "../../index.css";
+ // make sure this points to your main CSS
 
 const AddStudent = () => {
   const { incrementStat, decrementStat } = useOutletContext();
@@ -50,31 +52,17 @@ const AddStudent = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(to bottom right, #ebebebff)", padding: "40px 0" }}>
-      <h2 className="fw-bold text-center mb-4" style={{ color: "#3730a3" }}>
-        Student Management
-      </h2>
+    <div className="add-student-container">
+      <h2 className="add-student-title">Student Management</h2>
 
       {/* Inline Form */}
-      <div
-        className="container-fluid"
-        style={{
-          maxWidth: "95%",
-          display: "flex",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          gap: "10px",
-          marginBottom: "25px",
-        }}
-      >
+      <div className="add-student-form">
         <input
           type="text"
           name="name"
           value={newStudent.name}
           onChange={handleInputChange}
           placeholder="Full Name *"
-          className="form-control"
-          style={{ flex: "1 1 180px", minWidth: "150px", borderRadius: "8px" }}
         />
         <input
           type="email"
@@ -82,8 +70,6 @@ const AddStudent = () => {
           value={newStudent.email}
           onChange={handleInputChange}
           placeholder="Email *"
-          className="form-control"
-          style={{ flex: "1 1 200px", minWidth: "160px", borderRadius: "8px" }}
         />
         <input
           type="text"
@@ -91,8 +77,6 @@ const AddStudent = () => {
           value={newStudent.course}
           onChange={handleInputChange}
           placeholder="Course *"
-          className="form-control"
-          style={{ flex: "1 1 150px", minWidth: "140px", borderRadius: "8px" }}
         />
         <input
           type="text"
@@ -100,8 +84,6 @@ const AddStudent = () => {
           value={newStudent.phone}
           onChange={handleInputChange}
           placeholder="Phone"
-          className="form-control"
-          style={{ flex: "1 1 150px", minWidth: "140px", borderRadius: "8px" }}
         />
         <input
           type="text"
@@ -109,25 +91,14 @@ const AddStudent = () => {
           value={newStudent.batch}
           onChange={handleInputChange}
           placeholder="Batch"
-          className="form-control"
-          style={{ flex: "1 1 150px", minWidth: "130px", borderRadius: "8px" }}
         />
 
-        <button
-          className="btn text-white px-4 fw-semibold"
-          style={{ backgroundColor: "#4f46e5", borderRadius: "8px", transition: "0.3s" }}
-          onMouseOver={(e) => (e.target.style.backgroundColor = "#6366f1")}
-          onMouseOut={(e) => (e.target.style.backgroundColor = "#4f46e5")}
-          onClick={handleAddOrUpdate}
-        >
+        <button className="add-btn" onClick={handleAddOrUpdate}>
           {editId ? "Update" : "Add"}
         </button>
 
         <button
-          className="btn btn-outline-secondary px-4 fw-semibold"
-          style={{ borderRadius: "8px", transition: "0.3s" }}
-          onMouseOver={(e) => (e.target.style.backgroundColor = "#e5e7eb")}
-          onMouseOut={(e) => (e.target.style.backgroundColor = "transparent")}
+          className="clear-btn"
           onClick={() => {
             setNewStudent({ name: "", email: "", course: "", phone: "", batch: "" });
             setEditId(null);
@@ -138,43 +109,34 @@ const AddStudent = () => {
       </div>
 
       {/* Student List */}
-      <div className="container-fluid d-flex flex-column align-items-center" style={{ maxWidth: "1000px" }}>
+      <div className="student-list">
         {students.length === 0 ? (
-          <p className="text-center text-muted fs-5 mt-3">No students added yet</p>
+          <p className="text-center text-muted fs-5 mt-3">
+            No students added yet
+          </p>
         ) : (
           students.map((student) => (
-            <div
-              key={student.id}
-              className="w-100 mb-3 p-3 shadow-sm"
-              style={{ backgroundColor: "#fff", borderLeft: "6px solid #4f46e5", borderRadius: "10px", transition: "0.3s" }}
-              onMouseOver={(e) => (e.currentTarget.style.background = "#eef2ff")}
-              onMouseOut={(e) => (e.currentTarget.style.background = "#fff")}
-            >
+            <div key={student.id} className="student-card">
               <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div>
-                  <h5 className="fw-bold text-primary mb-1">{student.name}</h5>
-                  <small className="text-muted d-block">
+                <div className="student-info">
+                  <h5 className="student-name">{student.name}</h5>
+                  <small>
                     {student.email} • {student.course}
                   </small>
                   <small>
-                    {student.phone && `📞 ${student.phone}`} {student.batch && `🎓 ${student.batch}`}
+                    {student.phone && `📞 ${student.phone}`}{" "}
+                    {student.batch && `🎓 ${student.batch}`}
                   </small>
                 </div>
-                <div className="mt-2 mt-md-0">
+                <div className="student-actions mt-2 mt-md-0">
                   <button
-                    className="btn btn-sm btn-warning me-2 fw-semibold"
-                    style={{ borderRadius: "6px" }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#facc15")}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = "#ffc107")}
+                    className="btn btn-sm btn-warning me-2"
                     onClick={() => handleEdit(student)}
                   >
                     Edit
                   </button>
                   <button
-                    className="btn btn-sm btn-danger fw-semibold"
-                    style={{ borderRadius: "6px" }}
-                    onMouseOver={(e) => (e.target.style.backgroundColor = "#ef4444")}
-                    onMouseOut={(e) => (e.target.style.backgroundColor = "#dc3545")}
+                    className="btn btn-sm btn-danger"
                     onClick={() => handleDelete(student.id)}
                   >
                     Delete
@@ -190,3 +152,4 @@ const AddStudent = () => {
 };
 
 export default AddStudent;
+

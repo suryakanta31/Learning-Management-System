@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../index.css"; // Make sure your global CSS is imported
 
 const TrainerLogin = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -34,82 +35,47 @@ const TrainerLogin = () => {
   };
 
   return (
-    <div
-      className="container d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
-    >
-      <div
-        className="card shadow-sm p-4"
-        style={{ maxWidth: "400px", width: "100%" }}
-      >
-        <h2 className="text-center mb-4">
-          {isSignIn ? "Trainer Sign In" : "Trainer Sign Up"}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
+    <div className="login-page">
+      <div className="login-card">
+        <h2 className="login-title">{isSignIn ? "Trainer Sign In" : "Trainer Sign Up"}</h2>
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          {!isSignIn && (
             <input
               type="password"
-              className="form-control"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
-          </div>
-
-          {!isSignIn && (
-            <div className="mb-3">
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
           )}
-
-          <button type="submit" className="btn btn-success w-100">
+          <button type="submit" className="btn-login">
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
-        <p
-          className="text-center mt-3 text-muted"
-          style={{ fontSize: "0.9rem" }}
-        >
+        <p className="login-toggle">
           {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span
-            className="text-success"
-            style={{ cursor: "pointer", fontWeight: "500" }}
-            onClick={() => {
-              setIsSignIn(!isSignIn);
-              setEmail("");
-              setPassword("");
-              setConfirmPassword("");
-            }}
-          >
+          <span onClick={() => { setIsSignIn(!isSignIn); setEmail(""); setPassword(""); setConfirmPassword(""); }}>
             {isSignIn ? "Sign Up" : "Sign In"}
           </span>
         </p>
 
         {isSignIn && (
-          <p
-            className="text-center mt-2 text-muted"
-            style={{ fontSize: "0.8rem" }}
-          >
+          <p className="login-demo">
             Demo Credentials: <strong>trainer@gmail.com / trainer123</strong>
           </p>
         )}

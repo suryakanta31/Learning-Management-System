@@ -20,8 +20,9 @@ const Assignments = () => {
   };
 
   const handleAddOrUpdate = () => {
-    if (!newAssignment.name || !newAssignment.status || !newAssignment.submission)
+    if (!newAssignment.name || !newAssignment.status || !newAssignment.submission) {
       return alert("Fill all fields");
+    }
 
     if (editId) {
       setAssignments(assignments.map(a => (a.id === editId ? { ...newAssignment, id: editId } : a)));
@@ -42,24 +43,18 @@ const Assignments = () => {
   const handleDelete = (id) => setAssignments(assignments.filter(a => a.id !== id));
 
   return (
-    <div style={{ minHeight: "100vh", padding: "40px 0", background: "#ebebeb" }}>
-      <h2 className="fw-bold text-center mb-2" style={{ color: "#3730a3" }}>
-       
-      </h2>
-      <p className="text-center text-muted mb-4">
-       
-      </p>
+    <div className="child-page">
+      <h2 className="page-title">Assignments</h2>
+      <p className="page-subtitle">Manage all your assignments here</p>
 
       {/* Form */}
-      <div className="container-fluid d-flex flex-wrap justify-content-center gap-2 mb-4">
+      <div className="form-inline">
         <input
           type="text"
           name="name"
           placeholder="Assignment Name *"
           value={newAssignment.name}
           onChange={handleInputChange}
-          className="form-control"
-          style={{ flex: "1 1 150px", minWidth: 140, borderRadius: 8 }}
         />
         <input
           type="text"
@@ -67,67 +62,41 @@ const Assignments = () => {
           placeholder="Status (Pending/Submitted) *"
           value={newAssignment.status}
           onChange={handleInputChange}
-          className="form-control"
-          style={{ flex: "1 1 120px", minWidth: 120, borderRadius: 8 }}
         />
         <input
           type="datetime-local"
           name="submission"
           value={newAssignment.submission}
           onChange={handleInputChange}
-          className="form-control"
-          style={{ flex: "1 1 180px", minWidth: 180, borderRadius: 8 }}
         />
         <input
           type="file"
           name="file"
           onChange={handleInputChange}
-          className="form-control"
-          style={{ flex: "1 1 200px", minWidth: 200, borderRadius: 8 }}
         />
-        <button
-          className="btn text-white px-4 fw-semibold"
-          style={{ backgroundColor: "#4f46e5", borderRadius: 8 }}
-          onClick={handleAddOrUpdate}
-        >
-          {editId ? "Update" : "Add"}
-        </button>
-        <button
-          className="btn btn-outline-secondary px-4 fw-semibold"
-          style={{ borderRadius: 8 }}
-          onClick={() => setNewAssignment({ name: "", status: "", submission: "", file: null }) && setEditId(null)}
-        >
-          Clear
-        </button>
+        <button className="btn-primary" onClick={handleAddOrUpdate}>{editId ? "Update" : "Add"}</button>
+        <button className="btn-secondary" onClick={() => { setNewAssignment({ name: "", status: "", submission: "", file: null }); setEditId(null); }}>Clear</button>
       </div>
 
       {/* Assignments List */}
-      <div className="container-fluid" style={{ maxWidth: 900 }}>
+      <div className="list-container">
         {assignments.length === 0 ? (
-          <p className="text-center text-muted fs-5">No assignments added yet</p>
+          <p className="text-muted">No assignments added yet</p>
         ) : (
           assignments.map(a => (
-            <div
-              key={a.id}
-              className="w-100 mb-3 p-3 shadow-sm"
-              style={{ background: "#fff", borderLeft: "6px solid #4f46e5", borderRadius: 10 }}
-            >
-              <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div>
-                  <h5 className="fw-bold text-primary mb-1">{a.name}</h5>
-                  <small className="text-muted d-block mb-1">
-                    Status: {a.status} | Submission: {new Date(a.submission).toLocaleString()}
+            <div key={a.id} className="list-item">
+              <div className="item-info">
+                <h5>{a.name}</h5>
+                <small>Status: {a.status} | Submission: {new Date(a.submission).toLocaleString()}</small>
+                {a.file && (
+                  <small>
+                    File: <a href={URL.createObjectURL(a.file)} target="_blank" rel="noreferrer">{a.file.name}</a>
                   </small>
-                  {a.file && (
-                    <small className="d-block">
-                      File: <a href={URL.createObjectURL(a.file)} target="_blank" rel="noreferrer">{a.file.name}</a>
-                    </small>
-                  )}
-                </div>
-                <div className="mt-2 mt-md-0">
-                  <button className="btn btn-sm btn-warning me-2 fw-semibold" onClick={() => handleEdit(a)}>Edit</button>
-                  <button className="btn btn-sm btn-danger fw-semibold" onClick={() => handleDelete(a.id)}>Delete</button>
-                </div>
+                )}
+              </div>
+              <div className="item-actions">
+                <button className="btn-warning" onClick={() => handleEdit(a)}>Edit</button>
+                <button className="btn-danger" onClick={() => handleDelete(a.id)}>Delete</button>
               </div>
             </div>
           ))

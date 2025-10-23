@@ -2,31 +2,11 @@ import React, { useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 
 // StatCard Component
-const StatCard = ({ title, count, color, bgColor }) => (
-  <div style={{ flex: 1 }}>
-    <div
-      className="card border-0 shadow-sm p-3 text-center h-100"
-      style={{
-        borderRadius: "15px",
-        background: bgColor,
-        transition: "transform 0.3s, box-shadow 0.3s",
-        cursor: "pointer",
-        minHeight: 100,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-5px)";
-        e.currentTarget.style.boxShadow = "0 10px 20px rgba(0,0,0,0.15)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
-      }}
-    >
-      <h6 className="text-secondary">{title}</h6>
-      <h3 className={`fw-bold ${color}`}>{count}</h3>
+const StatCard = ({ title, count, colorClass, bgClass }) => (
+  <div className="stat-card-container">
+    <div className={`stat-card ${bgClass} ${colorClass}`}>
+      <h6>{title}</h6>
+      <h3>{count}</h3>
     </div>
   </div>
 );
@@ -37,17 +17,14 @@ const StudentDashboard = () => {
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [stats, setStats] = useState({ total: 0, courses: 0, assignments: 0, sessions: 0 });
-
-  const upcomingClasses = [
-    { title: "JavaScript DOM Manipulation", date: "Oct 22, 2025", time: "9:00 AM" },
-    { title: "Spring Boot Basics", date: "Oct 23, 2025", time: "11:30 AM" },
-  ];
+  const [sessions, setSessions] = useState([]); // Dynamic sessions state
 
   const dashboardMessages = [
     "Keep learning — you’re 70% done with your React Course!",
     "New course ‘Advanced Java’ is now available for enrollment.",
   ];
 
+  // Update stats dynamically
   const incrementStat = (key) => {
     setStats((prev) => {
       const newVal = prev[key] + 1;
@@ -70,220 +47,81 @@ const StudentDashboard = () => {
   };
 
   const menuItems = [
-    { label: "Dashboard", icon: "bi-speedometer2", path: "/student" },
-    { label: "My Courses", icon: "bi-journal-text", path: "/student/smycourses" },
-    { label: "Assignments / Tests", icon: "bi-pencil-square", path: "/student/assignments" },
-    { label: "Certificates", icon: "bi-award", path: "/student/certificates" },
-    { label: "Trainer Feedback", icon: "bi-chat-left-text", path: "/student/feedback" },
-    { label: "Sessions", icon: "bi-clock", path: "/student/sessions" },
+    { label: "Dashboard", icon: "🖥️", path: "/student" },
+    { label: "My Courses", icon: "📚", path: "/student/smycourses" },
+    { label: "Assignments / Tests", icon: "📝", path: "/student/assignments" },
+    { label: "Certificates", icon: "🏆", path: "/student/certificates" },
+    { label: "Trainer Feedback", icon: "💬", path: "/student/feedback" },
+    { label: "Sessions", icon: "⏰", path: "/student/sessions" },
   ];
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        width: "100vw",
-        fontFamily: "Arial, sans-serif",
-        overflow: "hidden",
-      }}
-    >
+    <div className="dashboard-wrapper">
       {/* Sidebar */}
-      <aside
-        style={{
-          background: "linear-gradient(180deg, #4f5bd5, #6c7bff)",
-          width: sidebarOpen ? 250 : 70,
-          transition: "width 0.3s",
-          height: "100vh",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          display: "flex",
-          flexDirection: "column",
-          borderRight: "2px solid rgba(255,255,255,0.2)",
-          overflow: "hidden",
-        }}
-      >
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#fff",
-            fontSize: "1rem",
-            margin: "10px",
-            cursor: "pointer",
-            alignSelf: sidebarOpen ? "flex-end" : "center",
-          }}
-        >
+      <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
+        <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? "◀" : "▶"}
         </button>
 
-        {sidebarOpen && (
-          <div
-            style={{
-              textAlign: "center",
-              borderBottom: "1px solid rgba(255,255,255,0.2)",
-              paddingBottom: 10,
-            }}
-          >
-            <h4 style={{ color: "#fff", letterSpacing: 1 }}>Kapil IT LMS</h4>
-          </div>
-        )}
+        {sidebarOpen && <div className="sidebar-header">Kapil IT LMS</div>}
 
-        <ul
-          className="nav flex-column flex-grow-1 mt-2"
-          style={{ overflowY: "auto" }}
-        >
+        <ul className="sidebar-menu">
           {menuItems.map((item, idx) => (
-            <li key={idx} className="nav-item">
-              <Link
-                to={item.path}
-                className="nav-link d-flex align-items-center"
-                style={{
-                  color: "#fff",
-                  padding: "10px 20px",
-                  borderRadius: 10,
-                  margin: "4px 10px",
-                  fontWeight: 500,
-                }}
-              >
-                <i className={`bi ${item.icon} me-2`} style={{ fontSize: 18 }}></i>
-                {sidebarOpen && item.label}
+            <li key={idx}>
+              <Link to={item.path} className="sidebar-link">
+                <span className="sidebar-icon">{item.icon}</span>
+                {sidebarOpen && <span className="sidebar-label">{item.label}</span>}
               </Link>
             </li>
           ))}
         </ul>
 
-        <div
-          style={{
-            margin: 20,
-            display: "flex",
-            justifyContent: sidebarOpen ? "flex-start" : "center",
-          }}
-        >
-          <button
-            onClick={handleLogout}
-            style={{
-              backgroundColor: "#ff4b5c",
-              border: "none",
-              color: "#fff",
-              padding: "8px 16px",
-              borderRadius: 8,
-              cursor: "pointer",
-              fontWeight: 500,
-              width: sidebarOpen ? "100%" : 40,
-              transition: "0.3s",
-            }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = "#ff6378")}
-            onMouseOut={(e) => (e.target.style.backgroundColor = "#ff4b5c")}
-          >
-            {sidebarOpen ? "Logout" : "⎋"}
-          </button>
+        <div className="sidebar-logout">
+          <button onClick={handleLogout}>{sidebarOpen ? "Logout" : "⎋"}</button>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main
-        style={{
-          flexGrow: 1,
-          marginLeft: sidebarOpen ? 250 : 70,
-          height: "100vh",
-          padding: 20,
-          backgroundColor: "#ffffff",
-          transition: "margin-left 0.3s",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          overflow: "hidden",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: 15,
-            backgroundColor: "#f5f5f5",
-            borderRadius: 15,
-            color: "#353333",
-            boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-          }}
-        >
-          <h3 className="m-0 fw-bold">Dashboard</h3>
-          <span className="fw-bold">{studentName}</span>
+      <main className={`main-content ${sidebarOpen ? "with-sidebar" : "collapsed-sidebar"}`}>
+        <div className="dashboard-header">
+          <h3>Dashboard</h3>
+          <span>{studentName}</span>
         </div>
 
-        {/* Stats Cards */}
-        <div style={{ display: "flex", gap: "15px", marginTop: 10 }}>
-          <StatCard
-            title="🧮 Total"
-            count={stats.total}
-            color="text-primary"
-            bgColor="linear-gradient(135deg, #e0f7fa, #b2ebf2)"
-          />
-          <StatCard
-            title="📚 Courses"
-            count={stats.courses}
-            color="text-info"
-            bgColor="linear-gradient(135deg, #e3f2fd, #bbdefb)"
-          />
-          <StatCard
-            title="📝 Assignments"
-            count={stats.assignments}
-            color="text-warning"
-            bgColor="linear-gradient(135deg, #fff8e1, #ffe082)"
-          />
-          <StatCard
-            title="🎯 Sessions"
-            count={stats.sessions}
-            color="text-success"
-            bgColor="linear-gradient(135deg, #e8f5e9, #c8e6c9)"
-          />
+        {/* Stats */}
+        <div className="dashboard-stats">
+          <StatCard title="🧮 Total" count={stats.total} colorClass="text-primary" bgClass="bg-gradient1" />
+          <StatCard title="📚 Courses" count={stats.courses} colorClass="text-info" bgClass="bg-gradient2" />
+          <StatCard title="📝 Assignments" count={stats.assignments} colorClass="text-warning" bgClass="bg-gradient3" />
+          <StatCard title="🎯 Sessions" count={stats.sessions} colorClass="text-success" bgClass="bg-gradient4" />
         </div>
 
-        {/* Upcoming Classes */}
-        <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
-          {upcomingClasses.map((cls, idx) => (
-            <div
-              key={idx}
-              style={{
-                flex: 1,
-                padding: 10,
-                backgroundColor: "#f0f4ff",
-                borderRadius: 10,
-                textAlign: "center",
-              }}
-            >
-              <strong>{cls.title}</strong>
-              <div>{cls.date}</div>
-              <div>{cls.time}</div>
-            </div>
-          ))}
+        {/* Upcoming Sessions */}
+        <div className="upcoming-classes">
+          {sessions.length === 0 ? (
+            <div className="empty-list">No upcoming sessions.</div>
+          ) : (
+            sessions.map((cls, idx) => (
+              <div key={idx} className="class-card">
+                <strong>{cls.title}</strong>
+                <div>{cls.date}</div>
+                <div>{cls.time}</div>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Dashboard Messages */}
-        <div style={{ display: "flex", gap: 10, marginTop: 15 }}>
+        <div className="dashboard-messages">
           {dashboardMessages.map((msg, idx) => (
-            <div
-              key={idx}
-              style={{
-                flex: 1,
-                padding: 10,
-                backgroundColor: "#fff3e0",
-                borderRadius: 10,
-                textAlign: "center",
-              }}
-            >
-              {msg}
-            </div>
+            <div key={idx} className="message-card">{msg}</div>
           ))}
         </div>
 
         {/* Child Routes */}
-        <div style={{ flex: "1 1 auto", overflowY: "auto", marginTop: 10 }}>
-          <Outlet context={{ incrementStat, decrementStat }} />
+        <div className="dashboard-outlet">
+          {/* Pass sessions state and setter to child routes */}
+          <Outlet context={{ incrementStat, decrementStat, sessions, setSessions }} />
         </div>
       </main>
     </div>
@@ -291,6 +129,8 @@ const StudentDashboard = () => {
 };
 
 export default StudentDashboard;
+
+
 
 
 

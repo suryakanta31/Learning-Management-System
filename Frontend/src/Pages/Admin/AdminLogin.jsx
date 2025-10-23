@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import "../../index.css"; // make sure path is correct
 
 const AdminLogin = () => {
-  const [isSignIn, setIsSignIn] = useState(true); // toggle between Sign In and Sign Up
+  const [isSignIn, setIsSignIn] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -12,7 +13,6 @@ const AdminLogin = () => {
     e.preventDefault();
 
     if (isSignIn) {
-      // Sign In logic
       if (email === "admin@gmail.com" && password === "admin123") {
         localStorage.setItem("adminToken", "loggedin");
         navigate("/admin");
@@ -20,7 +20,6 @@ const AdminLogin = () => {
         alert("Invalid credentials! Use admin@gmail.com / admin123");
       }
     } else {
-      // Sign Up logic
       if (password !== confirmPassword) {
         alert("Passwords do not match!");
         return;
@@ -34,55 +33,45 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
-      <div className="card shadow-sm p-4" style={{ maxWidth: "400px", width: "100%" }}>
-        <h2 className="text-center mb-4">{isSignIn ? "Admin Sign In" : "Admin Sign Up"}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
+    <div className="login-container">
+      <div className="login-card">
+        <h2 className="login-title">{isSignIn ? "Admin Sign In" : "Admin Sign Up"}</h2>
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="login-input"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="login-input"
+          />
+          {!isSignIn && (
             <input
               type="password"
-              className="form-control"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               required
+              className="login-input"
             />
-          </div>
-
-          {!isSignIn && (
-            <div className="mb-3">
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
           )}
-
-          <button type="submit" className="btn btn-primary w-100">
+          <button type="submit" className="login-btn">
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
-        <p className="text-center mt-3 text-muted" style={{ fontSize: "0.9rem" }}>
+        <p className="login-toggle-text">
           {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
           <span
-            className="text-primary"
-            style={{ cursor: "pointer", fontWeight: "500" }}
+            className="login-toggle-link"
             onClick={() => {
               setIsSignIn(!isSignIn);
               setEmail("");
@@ -95,7 +84,7 @@ const AdminLogin = () => {
         </p>
 
         {isSignIn && (
-          <p className="text-center mt-2 text-muted" style={{ fontSize: "0.8rem" }}>
+          <p className="login-demo-text">
             Demo Credentials: <strong>admin@gmail.com / admin123</strong>
           </p>
         )}
@@ -105,5 +94,4 @@ const AdminLogin = () => {
 };
 
 export default AdminLogin;
-
 

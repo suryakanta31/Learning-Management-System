@@ -34,66 +34,45 @@ const StudentLogin = () => {
   };
 
   return (
-    <div
-      className="container d-flex justify-content-center align-items-center"
-      style={{ minHeight: "100vh" }}
-    >
-      <div
-        className="card shadow-sm p-4"
-        style={{ maxWidth: "400px", width: "100%" }}
-      >
-        <h2 className="text-center mb-4">
-          {isSignIn ? "Student Sign In" : "Student Sign Up"}
-        </h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-3">
-            <input
-              type="email"
-              className="form-control"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="mb-3">
+    <div className="login-container">
+      <div className="login-card">
+        <h2 className="login-title">{isSignIn ? "Student Sign In" : "Student Sign Up"}</h2>
+        <form onSubmit={handleSubmit} className="login-form">
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="login-input"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="login-input"
+            required
+          />
+          {!isSignIn && (
             <input
               type="password"
-              className="form-control"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="login-input"
               required
             />
-          </div>
-
-          {!isSignIn && (
-            <div className="mb-3">
-              <input
-                type="password"
-                className="form-control"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
           )}
-
-          <button type="submit" className="btn btn-primary w-100">
+          <button type="submit" className="login-btn">
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
-        <p
-          className="text-center mt-3 text-muted"
-          style={{ fontSize: "0.9rem" }}
-        >
+        <p className="login-toggle-text">
           {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
           <span
-            className="text-primary"
-            style={{ cursor: "pointer", fontWeight: "500" }}
+            className="login-toggle-link"
             onClick={() => {
               setIsSignIn(!isSignIn);
               setEmail("");
@@ -106,10 +85,7 @@ const StudentLogin = () => {
         </p>
 
         {isSignIn && (
-          <p
-            className="text-center mt-2 text-muted"
-            style={{ fontSize: "0.8rem" }}
-          >
+          <p className="login-demo-text">
             Demo Credentials: <strong>student@gmail.com / student123</strong>
           </p>
         )}
@@ -119,3 +95,4 @@ const StudentLogin = () => {
 };
 
 export default StudentLogin;
+

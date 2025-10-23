@@ -30,7 +30,6 @@ const App = () => {
 
 export default App */
 
-
 import React from "react";
 import {
   createBrowserRouter,
@@ -66,7 +65,6 @@ import Sessions from "./Pages/Student/Sessions";
 import Assignments from "./Pages/Student/Assignments";
 import Certificates from "./Pages/Student/Certificates";
 import TrainerFeedback from "./Pages/Student/TrainerFeedback";
-//import Notifications from "./Pages/Student/Notifications";
 
 // Others
 import Contact from "./Pages/Contact";
@@ -74,18 +72,19 @@ import Contact from "./Pages/Contact";
 // Layout
 import Rootlayout from "./Layout/Rootlayout";
 
-// ===================== App Component =====================
 const App = () => {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<Rootlayout />}>
-        {/* ---------- Public Routes ---------- */}
-        <Route path="adminlogin" element={<AdminLogin />} />
-        <Route path="trainerlogin" element={<TrainerLogin />} />
-        <Route path="studentlogin" element={<StudentLogin />} />
-        <Route path="contact" element={<Contact />} />
+      <>
+        {/* ---------- Public Routes (with navbar) ---------- */}
+        <Route path="/" element={<Rootlayout />}>
+          <Route path="adminlogin" element={<AdminLogin />} />
+          <Route path="trainerlogin" element={<TrainerLogin />} />
+          <Route path="studentlogin" element={<StudentLogin />} />
+          <Route path="contact" element={<Contact />} />
+        </Route>
 
-        {/* ---------- Admin Protected Routes ---------- */}
+        {/* ---------- Admin Dashboard (no navbar) ---------- */}
         <Route path="admin" element={<AdminDashboard />}>
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
@@ -93,7 +92,7 @@ const App = () => {
           <Route path="reportsanalytics" element={<ReportsAnalytics />} />
         </Route>
 
-        {/* ---------- Trainer Protected Routes ---------- */}
+        {/* ---------- Trainer Dashboard (no navbar) ---------- */}
         <Route path="trainer" element={<TrainerDashboard />}>
           <Route path="mycourses" element={<MyCourses />} />
           <Route path="mybatches" element={<MyBatches />} />
@@ -102,15 +101,13 @@ const App = () => {
           <Route path="schedule" element={<Schedule />} />
         </Route>
 
-        {/* ---------- Student Protected Routes ---------- */}
+        {/* ---------- Student Dashboard (no navbar) ---------- */}
         <Route path="student" element={<StudentDashboard />}>
           <Route path="smycourses" element={<SMyCourses />} />
-          <Route path="Sessions" element={<Sessions />} />
-         {/*<Route path="notifications" element={<Notifications />} />*/}
+          <Route path="sessions" element={<Sessions />} />
           <Route path="assignments" element={<Assignments />} />
           <Route path="certificates" element={<Certificates />} />
           <Route path="feedback" element={<TrainerFeedback />} />
-          
         </Route>
 
         {/* ---------- 404 Fallback ---------- */}
@@ -118,7 +115,7 @@ const App = () => {
           path="*"
           element={<div className="text-center p-5">404 | Page Not Found</div>}
         />
-      </Route>
+      </>
     )
   );
 
@@ -126,3 +123,4 @@ const App = () => {
 };
 
 export default App;
+

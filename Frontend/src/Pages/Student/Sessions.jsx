@@ -1,118 +1,78 @@
-// Sessions.js
 import React, { useState } from "react";
 import { useOutletContext } from "react-router-dom";
 
 const Sessions = () => {
-  const { incrementStat, decrementStat } = useOutletContext();
-  const [sessions, setSessions] = useState([]);
-  const [newSessionTitle, setNewSessionTitle] = useState("");
-  const [newSessionDate, setNewSessionDate] = useState("");
-  const [newSessionTime, setNewSessionTime] = useState("");
+  const { incrementStat, decrementStat, sessions, setSessions } = useOutletContext();
+  const [newSession, setNewSession] = useState({ title: "", date: "", time: "" });
+  const [editId, setEditId] = useState(null);
 
-  const addSession = () => {
-    if (!newSessionTitle.trim() || !newSessionDate || !newSessionTime) return;
-    const newSession = {
-      title: newSessionTitle,
-      date: newSessionDate,
-      time: newSessionTime,
-    };
-    setSessions((prev) => [...prev, newSession]);
-    incrementStat("sessions");
-    setNewSessionTitle("");
-    setNewSessionDate("");
-    setNewSessionTime("");
+  const handleChange = (e) => setNewSession({ ...newSession, [e.target.name]: e.target.value });
+
+  const handleAddOrUpdate = () => {
+    if (!newSession.title || !newSession.date || !newSession.time) return alert("Fill all fields");
+
+    if (editId) {
+      setSessions(sessions.map((s) => (s.id === editId ? { ...s, ...newSession } : s)));
+      setEditId(null);
+    } else {
+      const newS = { id: Date.now(), ...newSession };
+      setSessions([newS, ...sessions]);
+      incrementStat("sessions");
+    }
+
+    setNewSession({ title: "", date: "", time: "" });
   };
 
-  const removeSession = (index) => {
-    setSessions((prev) => prev.filter((_, i) => i !== index));
+  const handleEdit = (session) => {
+    setNewSession(session);
+    setEditId(session.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = (id) => {
+    setSessions(sessions.filter((s) => s.id !== id));
     decrementStat("sessions");
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-      <h4>🎯 Sessions</h4>
+    <div className="child-page">
+      <h2 className="page-title">Sessions</h2>
+      <p className="page-subtitle">Add or manage your sessions</p>
 
-      {/* Add New Session */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Session Title"
-          value={newSessionTitle}
-          onChange={(e) => setNewSessionTitle(e.target.value)}
-          style={{ flex: 2, padding: "8px", borderRadius: 8, border: "1px solid #ccc" }}
-        />
-        <input
-          type="date"
-          value={newSessionDate}
-          onChange={(e) => setNewSessionDate(e.target.value)}
-          style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #ccc" }}
-        />
-        <input
-          type="time"
-          value={newSessionTime}
-          onChange={(e) => setNewSessionTime(e.target.value)}
-          style={{ flex: 1, padding: "8px", borderRadius: 8, border: "1px solid #ccc" }}
-        />
-        <button
-          onClick={addSession}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#4f5bd5",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-          }}
-        >
-          Add
-        </button>
+      {/* Form */}
+      <div className="form-inline">
+        <input type="text" name="title" placeholder="Session Title *" value={newSession.title} onChange={handleChange} />
+        <input type="date" name="date" value={newSession.date} onChange={handleChange} />
+        <input type="time" name="time" value={newSession.time} onChange={handleChange} />
+        <button className="btn-primary" onClick={handleAddOrUpdate}>{editId ? "Update" : "Add"}</button>
+        <button className="btn-secondary" onClick={() => { setNewSession({ title: "", date: "", time: "" }); setEditId(null); }}>Clear</button>
       </div>
 
       {/* Sessions List */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {sessions.length === 0 && (
-          <div style={{ padding: 15, backgroundColor: "#f5f5f5", borderRadius: 10, textAlign: "center" }}>
-            No sessions added yet.
-          </div>
-        )}
-        {sessions.map((session, idx) => (
-          <div
-            key={idx}
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              padding: 15,
-              backgroundColor: "#e8f5e9",
-              borderRadius: 10,
-              boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            <div>
-              <strong>{session.title}</strong>
-              <div style={{ fontSize: 12, color: "#555" }}>
-                {session.date} – {session.time}
+      <div className="list-container">
+        {sessions.length === 0 ? (
+          <div className="empty-list">No sessions added yet.</div>
+        ) : (
+          sessions.map((s) => (
+            <div key={s.id} className="list-item">
+              <div className="item-info">
+                <strong>{s.title}</strong>
+                <small>{s.date} – {s.time}</small>
+              </div>
+              <div className="item-actions">
+                <button className="btn-warning" onClick={() => handleEdit(s)}>Edit</button>
+                <button className="btn-danger" onClick={() => handleDelete(s.id)}>Delete</button>
               </div>
             </div>
-            <button
-              onClick={() => removeSession(idx)}
-              style={{
-                backgroundColor: "#ff4b5c",
-                color: "#fff",
-                border: "none",
-                padding: "6px 12px",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );
 };
 
 export default Sessions;
+
+
+
 

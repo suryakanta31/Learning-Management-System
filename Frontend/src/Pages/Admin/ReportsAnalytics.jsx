@@ -12,6 +12,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import "../../index.css"; // make sure path is correct
 
 const ReportsAnalytics = () => {
   const performanceData = [
@@ -28,13 +29,13 @@ const ReportsAnalytics = () => {
   const COLORS = ["#82ca9d", "#ff7f7f"];
 
   return (
-    <div>
-      <h4 className="fw-bold mb-3">Reports & Analytics</h4>
+    <div className="reports-container">
+      <h2 className="reports-title">Reports & Analytics</h2>
 
-      <div className="row">
+      <div className="reports-row">
         {/* Bar Chart */}
-        <div className="col-md-6">
-          <div className="card p-3 shadow-sm">
+        <div className="reports-col">
+          <div className="report-card">
             <h6>Course Performance Overview</h6>
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={performanceData}>
@@ -43,15 +44,15 @@ const ReportsAnalytics = () => {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="performance" fill="#8884d8" />
+                <Bar dataKey="performance" fill="#4f46e5" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Pie Chart */}
-        <div className="col-md-6">
-          <div className="card p-3 shadow-sm">
+        <div className="reports-col">
+          <div className="report-card">
             <h6>Attendance Summary</h6>
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
