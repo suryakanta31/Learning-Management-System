@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../index.css"; // Make sure your global CSS is imported
+import authService from "../../Services/authService";
+import "../../index.css";
 
 const TrainerLogin = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -9,41 +10,50 @@ const TrainerLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isSignIn) {
-      // Demo Trainer Login
-      if (email === "trainer@gmail.com" && password === "trainer123") {
-        localStorage.setItem("trainerToken", "loggedin");
-        navigate("/trainer");
+    try {
+      if (isSignIn) {
+        const res = await authService.login("trainer", { email, password });
+        if (res.token) {
+          alert("Trainer login successful!");
+          navigate("/trainer");
+        } else {
+          alert(res.message || "Invalid credentials!");
+        }
       } else {
-        alert("Invalid credentials! Use trainer@gmail.com / trainer123");
+        if (password !== confirmPassword) {
+          alert("Passwords do not match!");
+          return;
+        }
+
+        const res = await authService.signup("trainer", { email, password });
+        alert(res.message || "Signup successful!");
+        setIsSignIn(true);
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
-    } else {
-      // Demo Sign Up
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
-      }
-      alert(`Trainer registered with email: ${email}`);
-      setIsSignIn(true);
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong!");
     }
   };
 
   return (
-    <div className="login-page">
+    <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">{isSignIn ? "Trainer Sign In" : "Trainer Sign Up"}</h2>
+        <h2 className="login-title">
+          {isSignIn ? "Trainer Sign In" : "Trainer Sign Up"}
+        </h2>
+
         <form onSubmit={handleSubmit} className="login-form">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            className="login-input"
             required
           />
           <input
@@ -51,6 +61,7 @@ const TrainerLogin = () => {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            className="login-input"
             required
           />
           {!isSignIn && (
@@ -59,29 +70,34 @@ const TrainerLogin = () => {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              className="login-input"
               required
             />
           )}
-          <button type="submit" className="btn-login">
+          <button type="submit" className="login-btn">
             {isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
-        <p className="login-toggle">
+        <p className="login-toggle-text">
           {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span onClick={() => { setIsSignIn(!isSignIn); setEmail(""); setPassword(""); setConfirmPassword(""); }}>
+          <span
+            className="login-toggle-link"
+            onClick={() => {
+              setIsSignIn(!isSignIn);
+              setEmail("");
+              setPassword("");
+              setConfirmPassword("");
+            }}
+          >
             {isSignIn ? "Sign Up" : "Sign In"}
           </span>
         </p>
-
-        {isSignIn && (
-          <p className="login-demo">
-            Demo Credentials: <strong>trainer@gmail.com / trainer123</strong>
-          </p>
-        )}
       </div>
     </div>
   );
 };
 
 export default TrainerLogin;
+
+

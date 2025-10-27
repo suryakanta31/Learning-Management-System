@@ -29,15 +29,16 @@ const App = () => {
 }
 
 export default App */
-
+// src/App.jsx
 import React from "react";
 import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
   RouterProvider,
+  redirect,
 } from "react-router-dom";
-import './index.css';
+import "./index.css";
 
 // ===================== Pages =====================
 // Admin
@@ -68,15 +69,33 @@ import TrainerFeedback from "./Pages/Student/TrainerFeedback";
 
 // Others
 import Contact from "./Pages/Contact";
-
-// Layout
 import Rootlayout from "./Layout/Rootlayout";
+
+// ===================== Services =====================
+import authService from "./Services/authService";
+
+// ✅ FIXED AUTH CHECK FUNCTION
+const requireAuth = (expectedRole) => {
+  const currentUser = authService.getCurrentUser();
+
+  if (!currentUser) {
+    throw redirect(`/${expectedRole}login`);
+  }
+
+  // ✅ If logged in but wrong role → redirect to correct dashboard
+  if (currentUser.role !== expectedRole) {
+    throw redirect(`/${currentUser.role}`);
+  }
+
+  // ✅ Otherwise continue
+  return null;
+};
 
 const App = () => {
   const router = createBrowserRouter(
     createRoutesFromElements(
       <>
-        {/* ---------- Public Routes (with navbar) ---------- */}
+        {/* ---------- Public Routes ---------- */}
         <Route path="/" element={<Rootlayout />}>
           <Route path="adminlogin" element={<AdminLogin />} />
           <Route path="trainerlogin" element={<TrainerLogin />} />
@@ -84,16 +103,24 @@ const App = () => {
           <Route path="contact" element={<Contact />} />
         </Route>
 
-        {/* ---------- Admin Dashboard (no navbar) ---------- */}
-        <Route path="admin" element={<AdminDashboard />}>
+        {/* ---------- Admin Dashboard ---------- */}
+        <Route
+          path="admin"
+          element={<AdminDashboard />}
+          loader={() => requireAuth("admin")}
+        >
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
           <Route path="managecourse" element={<ManageCourse />} />
           <Route path="reportsanalytics" element={<ReportsAnalytics />} />
         </Route>
 
-        {/* ---------- Trainer Dashboard (no navbar) ---------- */}
-        <Route path="trainer" element={<TrainerDashboard />}>
+        {/* ---------- Trainer Dashboard ---------- */}
+        <Route
+          path="trainer"
+          element={<TrainerDashboard />}
+          loader={() => requireAuth("trainer")}
+        >
           <Route path="mycourses" element={<MyCourses />} />
           <Route path="mybatches" element={<MyBatches />} />
           <Route path="attendance" element={<Attendance />} />
@@ -101,8 +128,12 @@ const App = () => {
           <Route path="schedule" element={<Schedule />} />
         </Route>
 
-        {/* ---------- Student Dashboard (no navbar) ---------- */}
-        <Route path="student" element={<StudentDashboard />}>
+        {/* ---------- Student Dashboard ---------- */}
+        <Route
+          path="student"
+          element={<StudentDashboard />}
+          loader={() => requireAuth("student")}
+        >
           <Route path="smycourses" element={<SMyCourses />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="assignments" element={<Assignments />} />
@@ -110,7 +141,7 @@ const App = () => {
           <Route path="feedback" element={<TrainerFeedback />} />
         </Route>
 
-        {/* ---------- 404 Fallback ---------- */}
+        {/* ---------- 404 ---------- */}
         <Route
           path="*"
           element={<div className="text-center p-5">404 | Page Not Found</div>}
@@ -123,4 +154,3 @@ const App = () => {
 };
 
 export default App;
-

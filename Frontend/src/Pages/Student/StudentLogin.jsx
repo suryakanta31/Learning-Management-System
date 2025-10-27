@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import authService from "../../Services/authService";
+import "../../index.css";
 
 const StudentLogin = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -8,35 +10,43 @@ const StudentLogin = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (isSignIn) {
-      // Demo Student Login
-      if (email === "student@gmail.com" && password === "student123") {
-        localStorage.setItem("studentToken", "loggedin");
-        navigate("/student");
+    try {
+      if (isSignIn) {
+        const res = await authService.login("student", { email, password });
+        if (res.token) {
+          alert("Student login successful!");
+          navigate("/student");
+        } else {
+          alert(res.message || "Invalid credentials!");
+        }
       } else {
-        alert("Invalid credentials! Use student@gmail.com / student123");
+        if (password !== confirmPassword) {
+          alert("Passwords do not match!");
+          return;
+        }
+
+        const res = await authService.signup("student", { email, password });
+        alert(res.message || "Signup successful!");
+        setIsSignIn(true);
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
       }
-    } else {
-      // Demo Student Sign Up
-      if (password !== confirmPassword) {
-        alert("Passwords do not match!");
-        return;
-      }
-      alert(`Student registered with email: ${email}`);
-      setIsSignIn(true);
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
+    } catch (err) {
+      alert(err.response?.data?.message || "Something went wrong!");
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">{isSignIn ? "Student Sign In" : "Student Sign Up"}</h2>
+        <h2 className="login-title">
+          {isSignIn ? "Student Sign In" : "Student Sign Up"}
+        </h2>
+
         <form onSubmit={handleSubmit} className="login-form">
           <input
             type="email"
@@ -83,16 +93,11 @@ const StudentLogin = () => {
             {isSignIn ? "Sign Up" : "Sign In"}
           </span>
         </p>
-
-        {isSignIn && (
-          <p className="login-demo-text">
-            Demo Credentials: <strong>student@gmail.com / student123</strong>
-          </p>
-        )}
       </div>
     </div>
   );
 };
 
 export default StudentLogin;
+
 

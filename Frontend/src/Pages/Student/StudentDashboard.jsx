@@ -57,7 +57,7 @@ const StudentDashboard = () => {
 
   return (
     <div className="dashboard-wrapper">
-      {/* Sidebar */}
+
       <aside className={`sidebar ${sidebarOpen ? "open" : "collapsed"}`}>
         <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
           {sidebarOpen ? "◀" : "▶"}
