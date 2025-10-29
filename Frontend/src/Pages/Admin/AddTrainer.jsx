@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+// src/Pages/Admin/AddTrainer.jsx
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import api from "../../Services/api";
 import "../../index.css";
- // make sure this points to your main CSS
 
 const AddTrainer = () => {
-  const { incrementStat, decrementStat } = useOutletContext();
+  const { incrementStat } = useOutletContext?.() ?? {};
   const [trainers, setTrainers] = useState([]);
   const [newTrainer, setNewTrainer] = useState({
     name: "",
@@ -15,48 +16,74 @@ const AddTrainer = () => {
     qualification: "",
   });
   const [editId, setEditId] = useState(null);
+  const [editIndex, setEditIndex] = useState(null);
+
+  // load trainers
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/trainer/"); // GET /api/trainer/
+        setTrainers(res.data || []);
+      } catch (err) {
+        console.error("Error loading trainers:", err);
+      }
+    })();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewTrainer({ ...newTrainer, [name]: value });
   };
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!newTrainer.name || !newTrainer.email) {
       alert("Please fill in required fields (Name & Email)");
       return;
     }
 
-    if (editId) {
-      setTrainers(
-        trainers.map((t) => (t.id === editId ? { ...t, ...newTrainer } : t))
-      );
-      setEditId(null);
-    } else {
-      const trainer = { id: Date.now(), ...newTrainer };
-      setTrainers([trainer, ...trainers]);
-      incrementStat && incrementStat("trainers");
-    }
+    try {
+      if (editId) {
+        // update PUT /api/trainer/update/{id}
+        await api.put(`/trainer/update/${editId}`, newTrainer);
+        setTrainers(prev => prev.map((t, i) => (i === editIndex ? { ...t, ...newTrainer } : t)));
+        setEditId(null);
+        setEditIndex(null);
+      } else {
+        // add POST /api/trainer/add
+        const res = await api.post("/trainer/add", newTrainer);
+        if (res?.data) {
+          setTrainers(prev => [res.data, ...prev]);
+        } else {
+          const r2 = await api.get("/trainer/");
+          setTrainers(r2.data || []);
+        }
+        incrementStat && incrementStat("trainers");
+      }
 
-    setNewTrainer({
-      name: "",
-      email: "",
-      phone: "",
-      skill: "",
-      experience: "",
-      qualification: "",
-    });
+      setNewTrainer({
+        name: "",
+        email: "",
+        phone: "",
+        skill: "",
+        experience: "",
+        qualification: "",
+      });
+    } catch (err) {
+      console.error("Error saving trainer:", err);
+      alert("Failed to save trainer — check console.");
+    }
   };
 
-  const handleEdit = (trainer) => {
+  const handleEdit = (trainer, index) => {
     setNewTrainer(trainer);
-    setEditId(trainer.id);
+    setEditId(trainer.id ?? null);
+    setEditIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = (id) => {
-    setTrainers(trainers.filter((t) => t.id !== id));
-    decrementStat && decrementStat("trainers");
+    // Delete is intentionally disabled in the UI. Manage removal from DB only.
+    alert("Delete disabled. Remove trainers directly from the database if needed.");
   };
 
   return (
@@ -113,7 +140,7 @@ const AddTrainer = () => {
         </button>
         <button
           className="clear-btn"
-          onClick={() => {
+          onClick={() =>
             setNewTrainer({
               name: "",
               email: "",
@@ -121,9 +148,8 @@ const AddTrainer = () => {
               skill: "",
               experience: "",
               qualification: "",
-            });
-            setEditId(null);
-          }}
+            })
+          }
         >
           Clear
         </button>
@@ -132,12 +158,10 @@ const AddTrainer = () => {
       {/* Trainer List */}
       <div className="trainer-list">
         {trainers.length === 0 ? (
-          <p className="text-center text-muted fs-5 mt-3">
-            No trainers added yet
-          </p>
+          <p className="text-center text-muted fs-5 mt-3">No trainers added yet</p>
         ) : (
-          trainers.map((trainer) => (
-            <div key={trainer.id} className="trainer-card">
+          trainers.map((trainer, idx) => (
+            <div key={trainer.id ?? idx} className="trainer-card">
               <div className="d-flex justify-content-between align-items-center flex-wrap">
                 <div className="trainer-info">
                   <h5 className="trainer-name">{trainer.name}</h5>
@@ -153,12 +177,13 @@ const AddTrainer = () => {
                 <div className="trainer-actions mt-2 mt-md-0">
                   <button
                     className="btn btn-sm btn-warning me-2"
-                    onClick={() => handleEdit(trainer)}
+                    onClick={() => handleEdit(trainer, idx)}
                   >
                     Edit
                   </button>
                   <button
                     className="btn btn-sm btn-danger"
+                    disabled
                     onClick={() => handleDelete(trainer.id)}
                   >
                     Delete
@@ -174,3 +199,4 @@ const AddTrainer = () => {
 };
 
 export default AddTrainer;
+

@@ -1,50 +1,72 @@
 package com.example.lms.service;
 
+import com.example.lms.dto.CreateStudentDto;
+import com.example.lms.entity.Student;
+import com.example.lms.entity.Trainer;
 import com.example.lms.entity.Admin;
+import com.example.lms.entity.User;
+import com.example.lms.entity.Course;
+import com.example.lms.repository.StudentRepository;
+import com.example.lms.repository.TrainerRepository;
 import com.example.lms.repository.AdminRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.lms.repository.CourseRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AdminService {
 
-    @Autowired
-    private AdminRepository adminRepository;
+    private final StudentRepository studentRepo;
+    private final TrainerRepository trainerRepo;
+    private final AdminRepository adminRepo;
+    private final CourseRepository courseRepo;
+    private final AuthService authService;
 
-    // Login
-    public Optional<Admin> login(String email, String password) {
-        Optional<Admin> admin = adminRepository.findByEmail(email);
-        if (admin.isPresent() && admin.get().getPassword().equals(password)) {
-            return admin;
-        }
-        return Optional.empty();
+    public AdminService(StudentRepository studentRepo,
+                        TrainerRepository trainerRepo,
+                        AdminRepository adminRepo,
+                        CourseRepository courseRepo,
+                        AuthService authService) {
+        this.studentRepo = studentRepo;
+        this.trainerRepo = trainerRepo;
+        this.adminRepo = adminRepo;
+        this.courseRepo = courseRepo;
+        this.authService = authService;
     }
 
-    // Create Admin
-    public Admin createAdmin(Admin admin) {
-        return adminRepository.save(admin);
+    // Students
+    public Student addStudent(CreateStudentDto dto) {
+        User user = authService.createUserIfNotExists(dto.getEmail(), dto.getPassword(), "STUDENT");
+        Student s = new Student();
+        s.setName(dto.getName());
+        s.setEmail(dto.getEmail());
+        s.setPhone(dto.getPhone());
+        s.setUser(user);
+        return studentRepo.save(s);
     }
 
-    // Get All Admins
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
+    public List<Student> listStudents() {
+        return studentRepo.findAll();
     }
 
-    // Get Admin by ID
-    public Optional<Admin> getAdminById(Long id) {
-        return adminRepository.findById(id);
+    // Trainers
+    public Trainer addTrainer(Trainer trainer, String rawPassword) {
+        User user = authService.createUserIfNotExists(trainer.getEmail(), rawPassword, "TRAINER");
+        trainer.setUser(user);
+        return trainerRepo.save(trainer);
     }
 
-    // Update Admin
-    public Admin updateAdmin(Admin admin) {
-        return adminRepository.save(admin);
+    public List<Trainer> listTrainers() {
+        return trainerRepo.findAll();
     }
 
-    // Delete Admin
-    public void deleteAdmin(Long id) {
-        adminRepository.deleteById(id);
+    // Courses
+    public Course addCourse(Course course) {
+        return courseRepo.save(course);
+    }
+
+    public List<Course> listCourses() {
+        return courseRepo.findAll();
     }
 }

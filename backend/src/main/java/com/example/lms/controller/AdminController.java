@@ -1,57 +1,55 @@
 package com.example.lms.controller;
 
-import com.example.lms.entity.Admin;
-import com.example.lms.repository.AdminRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.lms.dto.CreateStudentDto;
+import com.example.lms.entity.Student;
+import com.example.lms.entity.Trainer;
+import com.example.lms.entity.Course;
+import com.example.lms.service.AdminService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:5173") // your frontend port
 public class AdminController {
 
-    @Autowired
-    private AdminRepository adminRepository;
+    private final AdminService adminService;
+    public AdminController(AdminService adminService) { this.adminService = adminService; }
 
-    // ----------------- Admin Login -----------------
-    @PostMapping("/login")
-    public Admin login(@RequestBody Admin admin) {
-        Optional<Admin> existing = adminRepository.findByEmail(admin.getEmail());
-        if(existing.isPresent() && existing.get().getPassword().equals(admin.getPassword())) {
-            return existing.get();
-        }
-        return null;
+    // Students
+    @PostMapping("/students")
+    public ResponseEntity<Student> addStudent(@RequestBody CreateStudentDto dto) {
+        Student s = adminService.addStudent(dto);
+        return ResponseEntity.ok(s);
     }
 
-    // ----------------- Get all admins -----------------
-    @GetMapping("/")
-    public List<Admin> getAllAdmins() {
-        return adminRepository.findAll();
+    @GetMapping("/students")
+    public ResponseEntity<List<Student>> getAllStudents() {
+        return ResponseEntity.ok(adminService.listStudents());
     }
 
-    // ----------------- Add new admin -----------------
-    @PostMapping("/add")
-    public Admin addAdmin(@RequestBody Admin admin) {
-        return adminRepository.save(admin);
+    // Trainers
+    @PostMapping("/trainers")
+    public ResponseEntity<Trainer> addTrainer(@RequestBody Trainer trainer, @RequestParam String password) {
+        Trainer t = adminService.addTrainer(trainer, password);
+        return ResponseEntity.ok(t);
     }
 
-    // ----------------- Update admin -----------------
-    @PutMapping("/update/{id}")
-    public Admin updateAdmin(@PathVariable Long id, @RequestBody Admin admin) {
-        Admin existing = adminRepository.findById(id).orElseThrow();
-        existing.setName(admin.getName());
-        existing.setEmail(admin.getEmail());
-        existing.setPassword(admin.getPassword());
-        return adminRepository.save(existing);
+    @GetMapping("/trainers")
+    public ResponseEntity<List<Trainer>> getAllTrainers() {
+        return ResponseEntity.ok(adminService.listTrainers());
     }
 
-    // ----------------- Delete admin -----------------
-    @DeleteMapping("/delete/{id}")
-    public String deleteAdmin(@PathVariable Long id) {
-        adminRepository.deleteById(id);
-        return "Admin deleted successfully";
+    // Courses
+    @PostMapping("/courses")
+    public ResponseEntity<Course> addCourse(@RequestBody Course course) {
+        return ResponseEntity.ok(adminService.addCourse(course));
+    }
+
+    @GetMapping("/courses")
+    public ResponseEntity<List<Course>> getCourses() {
+        return ResponseEntity.ok(adminService.listCourses());
     }
 }
+

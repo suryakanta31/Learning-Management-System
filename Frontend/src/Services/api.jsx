@@ -1,23 +1,16 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL, // load from .env
-  headers: { "Content-Type": "application/json" },
+  baseURL: "http://localhost:8080/api", // ✅ no double /api/api
 });
 
 api.interceptors.request.use((config) => {
-  const adminToken = localStorage.getItem("adminToken");
-  const trainerToken = localStorage.getItem("trainerToken");
-  const studentToken = localStorage.getItem("studentToken");
-
-  const token = adminToken || trainerToken || studentToken;
-
+  const role = localStorage.getItem("role");
+  const token = localStorage.getItem(`${role}Token`);
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
-
   return config;
 });
 
 export default api;
-

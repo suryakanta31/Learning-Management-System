@@ -1,97 +1,57 @@
 package com.example.lms.controller;
 
-import com.example.lms.entity.Admin;
-import com.example.lms.entity.Student;
-import com.example.lms.entity.Trainer;
-import com.example.lms.repository.AdminRepository;
-import com.example.lms.repository.StudentRepository;
-import com.example.lms.repository.TrainerRepository;
+import com.example.lms.dto.JwtResponse;
+import com.example.lms.dto.LoginRequest;
+import com.example.lms.dto.SignupRequest;
+import com.example.lms.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "http://localhost:5173")
 public class AuthController {
 
     @Autowired
-    private AdminRepository adminRepository;
-    @Autowired
-    private TrainerRepository trainerRepository;
-    @Autowired
-    private StudentRepository studentRepository;
+    private AuthService authService;
 
-    // ---------------- Admin ----------------
-    @PostMapping("/admin/login")
-    public Map<String, String> adminLogin(@RequestBody Admin admin) {
-        Optional<Admin> existing = adminRepository.findByEmail(admin.getEmail())
-                .filter(a -> a.getPassword().equals(admin.getPassword()));
-        Map<String, String> response = new HashMap<>();
-        if (existing.isPresent()) {
-            response.put("token", UUID.randomUUID().toString());
-            response.put("message", "Login successful!");
-        } else {
-            response.put("message", "Invalid credentials!");
-        }
-        return response;
-    }
-
+    // ------------------ ADMIN ------------------
     @PostMapping("/admin/signup")
-    public Map<String, String> adminSignup(@RequestBody Admin admin) {
-        adminRepository.save(admin);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Admin registered successfully!");
-        return response;
+    public ResponseEntity<JwtResponse> registerAdmin(@RequestBody SignupRequest signupRequest) {
+        JwtResponse response = authService.registerAdmin(signupRequest);
+        return ResponseEntity.ok(response);
     }
 
-    // ---------------- Trainer ----------------
-    @PostMapping("/trainer/login")
-    public Map<String, String> trainerLogin(@RequestBody Trainer trainer) {
-        Optional<Trainer> existing = trainerRepository.findByEmail(trainer.getEmail())
-                .filter(t -> t.getPassword().equals(trainer.getPassword()));
-        Map<String, String> response = new HashMap<>();
-        if (existing.isPresent()) {
-            response.put("token", UUID.randomUUID().toString());
-            response.put("message", "Login successful!");
-        } else {
-            response.put("message", "Invalid credentials!");
-        }
-        return response;
+    @PostMapping("/admin/login")
+    public ResponseEntity<JwtResponse> loginAdmin(@RequestBody LoginRequest loginRequest) {
+        JwtResponse response = authService.login(loginRequest, "ADMIN");
+        return ResponseEntity.ok(response);
     }
 
+    // ------------------ TRAINER ------------------
     @PostMapping("/trainer/signup")
-    public Map<String, String> trainerSignup(@RequestBody Trainer trainer) {
-        trainerRepository.save(trainer);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Trainer registered successfully!");
-        return response;
+    public ResponseEntity<JwtResponse> registerTrainer(@RequestBody SignupRequest signupRequest) {
+        JwtResponse response = authService.registerTrainer(signupRequest);
+        return ResponseEntity.ok(response);
     }
 
-    // ---------------- Student ----------------
-    @PostMapping("/student/login")
-    public Map<String, String> studentLogin(@RequestBody Student student) {
-        Optional<Student> existing = studentRepository.findByEmail(student.getEmail())
-                .filter(s -> s.getPassword().equals(student.getPassword()));
-        Map<String, String> response = new HashMap<>();
-        if (existing.isPresent()) {
-            response.put("token", UUID.randomUUID().toString());
-            response.put("message", "Login successful!");
-        } else {
-            response.put("message", "Invalid credentials!");
-        }
-        return response;
+    @PostMapping("/trainer/login")
+    public ResponseEntity<JwtResponse> loginTrainer(@RequestBody LoginRequest loginRequest) {
+        JwtResponse response = authService.login(loginRequest, "TRAINER");
+        return ResponseEntity.ok(response);
     }
 
+    // ------------------ STUDENT ------------------
     @PostMapping("/student/signup")
-    public Map<String, String> studentSignup(@RequestBody Student student) {
-        studentRepository.save(student);
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Student registered successfully!");
-        return response;
+    public ResponseEntity<JwtResponse> registerStudent(@RequestBody SignupRequest signupRequest) {
+        JwtResponse response = authService.registerStudent(signupRequest);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/student/login")
+    public ResponseEntity<JwtResponse> loginStudent(@RequestBody LoginRequest loginRequest) {
+        JwtResponse response = authService.login(loginRequest, "STUDENT");
+        return ResponseEntity.ok(response);
     }
 }

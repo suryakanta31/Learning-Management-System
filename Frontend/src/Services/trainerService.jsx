@@ -1,13 +1,15 @@
 import api from "./api";
 
-const getMyBatches = () => api.get("/trainer/batches");
-const getMyCourses = () => api.get("/trainer/courses");
-const submitFeedback = (feedback) => api.post("/trainer/feedback", feedback);
-const markAttendance = (attendance) => api.post("/trainer/attendance", attendance);
+// Trainer Dashboard
+export const getMyBatches = (trainerId) => api.get(`/trainer/${trainerId}/batches`);
 
-export default {
-  getMyBatches,
-  getMyCourses,
-  submitFeedback,
-  markAttendance,
-};
+// Attendance
+export const markAttendance = (trainerId, data) =>
+  api.post(`/trainer/${trainerId}/attendance`, data);
+
+// Feedback
+export const submitFeedback = (trainerId, data) =>
+  api.post(`/trainer/${trainerId}/feedback`, data);
+
+// My Courses
+export const getMyCourses = (trainerId) => api.get(`/trainer/${trainerId}/courses`);

@@ -5,11 +5,9 @@ import lombok.*;
 
 @Entity
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-public class Admin {
+public class Course {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    private String email;
-    @OneToOne
-    private User user;
+    private String title;
+    private String description;
 }

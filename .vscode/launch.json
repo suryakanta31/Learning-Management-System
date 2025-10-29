@@ -25,6 +25,26 @@
             "projectName": "lms",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-LsmApplication<lsm>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.lsm.LsmApplication",
+            "projectName": "lsm",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-LmsApplication<lsm>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.example.lms.LmsApplication",
+            "projectName": "lsm",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

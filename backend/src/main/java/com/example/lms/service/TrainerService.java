@@ -1,50 +1,28 @@
 package com.example.lms.service;
 
-import com.example.lms.entity.Trainer;
-import com.example.lms.repository.TrainerRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.lms.entity.Batch;
+import com.example.lms.entity.Attendance;
+import com.example.lms.repository.BatchRepository;
+import com.example.lms.repository.AttendanceRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TrainerService {
+    private final BatchRepository batchRepo;
+    private final AttendanceRepository attendanceRepo;
 
-    @Autowired
-    private TrainerRepository trainerRepository;
-
-    // Login
-    public Optional<Trainer> login(String email, String password) {
-        Optional<Trainer> trainer = trainerRepository.findByEmail(email);
-        if (trainer.isPresent() && trainer.get().getPassword().equals(password)) {
-            return trainer;
-        }
-        return Optional.empty();
+    public TrainerService(BatchRepository batchRepo, AttendanceRepository attendanceRepo) {
+        this.batchRepo = batchRepo;
+        this.attendanceRepo = attendanceRepo;
     }
 
-    // Create Trainer
-    public Trainer createTrainer(Trainer trainer) {
-        return trainerRepository.save(trainer);
+    public List<Batch> getBatchesForTrainer(Long trainerId) {
+        return batchRepo.findByTrainerId(trainerId);
     }
 
-    // Get All Trainers
-    public List<Trainer> getAllTrainers() {
-        return trainerRepository.findAll();
-    }
-
-    // Get Trainer by ID
-    public Optional<Trainer> getTrainerById(Long id) {
-        return trainerRepository.findById(id);
-    }
-
-    // Update Trainer
-    public Trainer updateTrainer(Trainer trainer) {
-        return trainerRepository.save(trainer);
-    }
-
-    // Delete Trainer
-    public void deleteTrainer(Long id) {
-        trainerRepository.deleteById(id);
+    public Attendance markAttendance(Attendance attendance) {
+        return attendanceRepo.save(attendance);
     }
 }

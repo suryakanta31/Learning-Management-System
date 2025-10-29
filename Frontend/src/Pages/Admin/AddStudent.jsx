@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+// src/Pages/Admin/AddStudents.jsx  (or AddStudent.jsx if that's your filename)
+import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
+import api from "../../Services/api";
 import "../../index.css";
- // make sure this points to your main CSS
 
 const AddStudent = () => {
-  const { incrementStat, decrementStat } = useOutletContext();
+  const { incrementStat, decrementStat } = useOutletContext?.() ?? {};
   const [students, setStudents] = useState([]);
   const [newStudent, setNewStudent] = useState({
     name: "",
@@ -14,41 +15,66 @@ const AddStudent = () => {
     batch: "",
   });
   const [editId, setEditId] = useState(null);
+  const [editIndex, setEditIndex] = useState(null);
+
+  // load students
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/student/"); // GET /api/student/
+        setStudents(res.data || []);
+      } catch (err) {
+        console.error("Failed to load students:", err);
+      }
+    })();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewStudent({ ...newStudent, [name]: value });
   };
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!newStudent.name || !newStudent.email || !newStudent.course) {
       alert("Please fill in required fields (Name, Email, Course)");
       return;
     }
 
-    if (editId) {
-      setStudents(
-        students.map((s) => (s.id === editId ? { ...s, ...newStudent } : s))
-      );
-      setEditId(null);
-    } else {
-      const student = { id: Date.now(), ...newStudent };
-      setStudents([student, ...students]);
-      incrementStat && incrementStat("students");
-    }
+    try {
+      if (editId) {
+        // update existing: PUT /api/student/update/{id}
+        await api.put(`/student/update/${editId}`, newStudent);
+        setStudents(prev => prev.map((s, i) => (i === editIndex ? { ...s, ...newStudent } : s)));
+        setEditId(null);
+        setEditIndex(null);
+      } else {
+        // add new: POST /api/student/add
+        const res = await api.post("/student/add", newStudent);
+        if (res?.data) setStudents(prev => [res.data, ...prev]);
+        else {
+          const r = await api.get("/student/");
+          setStudents(r.data || []);
+        }
+        incrementStat && incrementStat("students");
+      }
 
-    setNewStudent({ name: "", email: "", course: "", phone: "", batch: "" });
+      setNewStudent({ name: "", email: "", course: "", phone: "", batch: "" });
+    } catch (err) {
+      console.error("Add/Update student failed:", err);
+      alert("Failed to save student — check console.");
+    }
   };
 
-  const handleEdit = (student) => {
+  const handleEdit = (student, index) => {
     setNewStudent(student);
-    setEditId(student.id);
+    setEditId(student.id ?? null);
+    setEditIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = (id) => {
-    setStudents(students.filter((s) => s.id !== id));
-    decrementStat && decrementStat("students");
+    // visible but disabled in UI; keep this message if someone tries
+    alert("Delete disabled here. Manage deletion from the database.");
   };
 
   return (
@@ -102,6 +128,7 @@ const AddStudent = () => {
           onClick={() => {
             setNewStudent({ name: "", email: "", course: "", phone: "", batch: "" });
             setEditId(null);
+            setEditIndex(null);
           }}
         >
           Clear
@@ -111,36 +138,19 @@ const AddStudent = () => {
       {/* Student List */}
       <div className="student-list">
         {students.length === 0 ? (
-          <p className="text-center text-muted fs-5 mt-3">
-            No students added yet
-          </p>
+          <p className="text-center text-muted fs-5 mt-3">No students added yet</p>
         ) : (
-          students.map((student) => (
-            <div key={student.id} className="student-card">
+          students.map((student, idx) => (
+            <div key={student.id ?? idx} className="student-card">
               <div className="d-flex justify-content-between align-items-center flex-wrap">
                 <div className="student-info">
                   <h5 className="student-name">{student.name}</h5>
-                  <small>
-                    {student.email} • {student.course}
-                  </small>
-                  <small>
-                    {student.phone && `📞 ${student.phone}`}{" "}
-                    {student.batch && `🎓 ${student.batch}`}
-                  </small>
+                  <small>{student.email} • {student.course}</small>
+                  <small>{student.phone && `📞 ${student.phone}`} {student.batch && `🎓 ${student.batch}`}</small>
                 </div>
                 <div className="student-actions mt-2 mt-md-0">
-                  <button
-                    className="btn btn-sm btn-warning me-2"
-                    onClick={() => handleEdit(student)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    onClick={() => handleDelete(student.id)}
-                  >
-                    Delete
-                  </button>
+                  <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(student, idx)}>Edit</button>
+                  <button className="btn btn-sm btn-danger" disabled onClick={() => handleDelete(student.id)}>Delete</button>
                 </div>
               </div>
             </div>
@@ -152,4 +162,5 @@ const AddStudent = () => {
 };
 
 export default AddStudent;
+
 
