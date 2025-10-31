@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -9,10 +9,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import axios from "axios";
 import "../../index.css";
-// custom styles
 
-// StatCard Component
 const StatCard = ({ title, count, color, bgColor }) => (
   <div className="stat-card" style={{ background: bgColor }}>
     <h6 className="stat-title">{title}</h6>
@@ -23,15 +22,45 @@ const StatCard = ({ title, count, color, bgColor }) => (
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const adminName = "Admin User";
-
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [stats, setStats] = useState({ students: 0, trainers: 0, courses: 0 });
 
-  const incrementStat = (type) =>
+  // ✅ Fetch counts from backend
+  const fetchStats = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const headers = { Authorization: `Bearer ${token}` };
+
+      const [studentsRes, trainersRes, coursesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/student/", { headers }),
+        axios.get("http://localhost:8080/api/trainer/", { headers }),
+        axios.get("http://localhost:8080/api/course/", { headers }),
+      ]);
+
+      setStats({
+        students: studentsRes.data.length,
+        trainers: trainersRes.data.length,
+        courses: coursesRes.data.length,
+      });
+    } catch (err) {
+      console.error("Error fetching stats:", err);
+    }
+  };
+
+  // ✅ On mount, load stats from backend
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  // ✅ Reusable updater functions (used by child routes)
+  const incrementStat = (type) => {
     setStats((prev) => ({ ...prev, [type]: prev[type] + 1 }));
-  const decrementStat = (type) =>
+  };
+
+  const decrementStat = (type) => {
     setStats((prev) => ({ ...prev, [type]: Math.max(prev[type] - 1, 0) }));
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
@@ -97,13 +126,19 @@ const AdminDashboard = () => {
                   >
                     <span className="icon">{item.icon}</span>
                     {sidebarOpen && <span>{item.label}</span>}
-                    {sidebarOpen && <span className="caret">{dropdownOpen[item.key] ? "▲" : "▼"}</span>}
+                    {sidebarOpen && (
+                      <span className="caret">
+                        {dropdownOpen[item.key] ? "▲" : "▼"}
+                      </span>
+                    )}
                   </div>
                   {dropdownOpen[item.key] && sidebarOpen && (
                     <ul className="submenu">
                       {item.dropdown.map((sub, subIdx) => (
                         <li key={subIdx}>
-                          <Link to={sub.path} className="submenu-item">{sub.label}</Link>
+                          <Link to={sub.path} className="submenu-item">
+                            {sub.label}
+                          </Link>
                         </li>
                       ))}
                     </ul>
@@ -134,9 +169,24 @@ const AdminDashboard = () => {
         {/* Stats & Chart */}
         <div className="stats-chart">
           <div className="stats-cards">
-            <StatCard title="Total Students" count={stats.students} color="primary" bgColor="#e0f7fa" />
-            <StatCard title="Total Trainers" count={stats.trainers} color="success" bgColor="#e8f5e9" />
-            <StatCard title="Active Courses" count={stats.courses} color="danger" bgColor="#fff3e0" />
+            <StatCard
+              title="Total Students"
+              count={stats.students}
+              color="primary"
+              bgColor="#e0f7fa"
+            />
+            <StatCard
+              title="Total Trainers"
+              count={stats.trainers}
+              color="success"
+              bgColor="#e8f5e9"
+            />
+            <StatCard
+              title="Active Courses"
+              count={stats.courses}
+              color="danger"
+              bgColor="#fff3e0"
+            />
           </div>
 
           <div className="chart-container">
@@ -152,8 +202,9 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Child Outlet (passes increment/decrement functions) */}
         <div className="child-outlet">
-          <Outlet context={{ incrementStat, decrementStat }} />
+          <Outlet context={{ incrementStat, decrementStat, fetchStats }} />
         </div>
       </main>
     </div>
@@ -161,4 +212,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
