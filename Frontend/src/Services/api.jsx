@@ -1,16 +1,26 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api", // ✅ no double /api/api
+  baseURL: "http://localhost:8080/api",
 });
 
-api.interceptors.request.use((config) => {
-  const role = localStorage.getItem("role");
-  const token = localStorage.getItem(`${role}Token`);
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+// ✅ Automatically attach token to every request
+api.interceptors.request.use(
+  (config) => {
+    // check tokens in localStorage for any logged in role
+    const adminToken = localStorage.getItem("adminToken");
+    const trainerToken = localStorage.getItem("trainerToken");
+    const studentToken = localStorage.getItem("studentToken");
+
+    const token = adminToken || trainerToken || studentToken;
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default api;

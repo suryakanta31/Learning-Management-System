@@ -32,22 +32,19 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // ------------------ ADMIN SIGNUP ------------------
+    // ---------------------- SIGNUP ----------------------
     public JwtResponse registerAdmin(SignupRequest request) {
         return registerUser(request, "ADMIN");
     }
 
-    // ------------------ TRAINER SIGNUP ------------------
     public JwtResponse registerTrainer(SignupRequest request) {
         return registerUser(request, "TRAINER");
     }
 
-    // ------------------ STUDENT SIGNUP ------------------
     public JwtResponse registerStudent(SignupRequest request) {
         return registerUser(request, "STUDENT");
     }
 
-    // ✅ Common Signup Logic
     private JwtResponse registerUser(SignupRequest request, String role) {
         Optional<User> existingUser = userRepository.findByEmail(request.getEmail());
         if (existingUser.isPresent()) {
@@ -56,47 +53,33 @@ public class AuthService {
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(role.toUpperCase()); // normalize role case
+        user.setPassword(passwordEncoder.encode(request.getPassword())); // ✅ BCrypt encode
+        user.setRole(role.toUpperCase());
         userRepository.save(user);
 
-        // Generate JWT token immediately after signup
+        // Immediately return JWT token
         String token = jwtUtils.generateJwtToken(user.getEmail(), user.getRole());
         return new JwtResponse(token, user.getRole(), user.getEmail());
     }
 
-    // ✅ Login Logic (Common for all roles)
+    // ---------------------- LOGIN ----------------------
     public JwtResponse login(LoginRequest request, String role) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-        } catch (AuthenticationException e) {
+        // ✅ Find user first
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Invalid email or password!"));
+
+        // ✅ Check password manually (this avoids AuthenticationManager confusion)
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Invalid email or password!");
         }
 
-        Optional<User> optUser = userRepository.findByEmail(request.getEmail());
-        if (optUser.isEmpty()) {
-            throw new RuntimeException("User not found!");
-        }
-
-        User user = optUser.get();
-
-        // Debug logs (optional)
-        System.out.println("Requested Role: " + role);
-        System.out.println("User Role in DB: " + user.getRole());
-
-        // ✅ Ensure user role matches requested role
+        // ✅ Verify correct role
         if (user.getRole() == null || !user.getRole().equalsIgnoreCase(role)) {
             throw new RuntimeException("Access denied for this role!");
         }
 
-        // Generate JWT token for authenticated user
+        // ✅ Generate token
         String token = jwtUtils.generateJwtToken(user.getEmail(), user.getRole());
         return new JwtResponse(token, user.getRole(), user.getEmail());
     }
 }
-

@@ -23,38 +23,48 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            // ✅ Disable CSRF for APIs
             .csrf(csrf -> csrf.disable())
+            // ✅ Enable global CORS
             .cors(cors -> {})
+
             .authorizeHttpRequests(auth -> auth
-                // ✅ Allow public endpoints for signup/login for all roles
+                // ✅ Public routes (no token required)
                 .requestMatchers(
                     "/api/auth/**",
-                    "/api/admins/**",
-                    "/api/trainers/**",
-                    "/api/students/**"
-                ).permitAll()
-
-                // ✅ Allow Swagger or actuator (optional)
-                .requestMatchers(
+                    "/api/admins/login",
+                    "/api/trainers/login",
+                    "/api/students/login",
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html"
                 ).permitAll()
 
-                // ✅ Any other endpoint requires authentication
+                // ✅ Role-based routes
+                .requestMatchers("/api/admin/**", "/api/course/**", "/api/student/**").hasAuthority("ADMIN")
+                .requestMatchers("/api/trainer/**").hasAnyAuthority("TRAINER", "ADMIN")
+                .requestMatchers("/api/student/**").hasAnyAuthority("STUDENT", "ADMIN")
+
+                // ✅ Any other route requires authentication
                 .anyRequest().authenticated()
             )
+
+            // ✅ Stateless session (for JWT)
             .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+            // ✅ Add our JWT filter before Spring's built-in authentication
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
+    // ✅ Password encoder for login (BCrypt)
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // ✅ Authentication Manager for AuthController
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();

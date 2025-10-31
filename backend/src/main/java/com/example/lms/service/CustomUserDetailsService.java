@@ -14,17 +14,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
-    // This is called during authentication
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
-        // Return a Spring Security compatible user
+        // ✅ Use authorities (no ROLE_ prefix)
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getRole()) // Example: "ADMIN", "STUDENT", "TRAINER"
+                .authorities(user.getRole()) // e.g., "ADMIN", "TRAINER", "STUDENT"
                 .build();
     }
 }

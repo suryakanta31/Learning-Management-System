@@ -1,16 +1,16 @@
 // src/Pages/Admin/ManageCourse.jsx
 import React, { useState, useEffect } from "react";
-import api from "../../Services/api"; // use your api wrapper
-import "../../index.css"; // keep your styling
+import api from "../../Services/api";
+import "../../index.css";
 
 const ManageCourse = () => {
   const [courses, setCourses] = useState([]);
-  const [newCourseName, setNewCourseName] = useState("");
-  const [newCourseContent, setNewCourseContent] = useState("");
+  const [newCourseTitle, setNewCourseTitle] = useState("");
+  const [newCourseDescription, setNewCourseDescription] = useState("");
   const [editIndex, setEditIndex] = useState(null);
-  const [editId, setEditId] = useState(null); // map list index -> DB id
+  const [editId, setEditId] = useState(null);
 
-  // load from backend
+  // ✅ Load all courses on mount
   useEffect(() => {
     (async () => {
       try {
@@ -22,33 +22,38 @@ const ManageCourse = () => {
     })();
   }, []);
 
+  // ✅ Add or Update course
   const handleAddOrUpdate = async () => {
-    if (!newCourseName.trim() || !newCourseContent.trim()) return;
+    if (!newCourseTitle.trim() || !newCourseDescription.trim()) return;
 
-    const courseData = { name: newCourseName, content: newCourseContent };
+    const courseData = {
+      title: newCourseTitle,
+      description: newCourseDescription,
+    };
 
     try {
       if (editIndex !== null && editId) {
-        // update existing (PUT /api/course/update/{id})
+        // Update course
         await api.put(`/course/update/${editId}`, courseData);
-        // update local copy preserving array order
-        setCourses(prev => prev.map((c, i) => (i === editIndex ? { ...c, ...courseData } : c)));
+        setCourses((prev) =>
+          prev.map((c, i) => (i === editIndex ? { ...c, ...courseData } : c))
+        );
         setEditIndex(null);
         setEditId(null);
       } else {
-        // add new (POST /api/course/add)
+        // Add new course
         const res = await api.post("/course/add", courseData);
-        // if backend returned saved entity use it, else reload list
-        if (res?.data && (res.data.id || res.data.name)) {
-          setCourses(prev => [res.data, ...prev]);
+        if (res?.data && res.data.id) {
+          setCourses((prev) => [res.data, ...prev]);
         } else {
-          // fallback: reload list
           const r2 = await api.get("/course/");
           setCourses(r2.data || []);
         }
       }
-      setNewCourseName("");
-      setNewCourseContent("");
+
+      // clear form
+      setNewCourseTitle("");
+      setNewCourseDescription("");
     } catch (err) {
       console.error("Save course failed:", err);
       alert("Failed to save course — check console.");
@@ -57,18 +62,15 @@ const ManageCourse = () => {
 
   const handleEdit = (index) => {
     const c = courses[index];
-    setNewCourseName(c.name || "");
-    setNewCourseContent(c.content || "");
+    setNewCourseTitle(c.title || "");
+    setNewCourseDescription(c.description || "");
     setEditIndex(index);
     setEditId(c.id ?? null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Delete stays local-disabled (visible but disabled) per your requirement
-  const handleDelete = (index) => {
-    // This button will be disabled in the UI. If you ever enable it, call backend delete endpoint:
-    // await api.delete(`/course/delete/${courses[index].id}`)
-    alert("Delete is disabled here. Manage deletion from the database.");
+  const handleDelete = () => {
+    alert("Delete is disabled — manage deletion in the database.");
   };
 
   return (
@@ -78,15 +80,15 @@ const ManageCourse = () => {
       <div className="course-form">
         <input
           type="text"
-          value={newCourseName}
-          onChange={(e) => setNewCourseName(e.target.value)}
-          placeholder="Course Name *"
+          value={newCourseTitle}
+          onChange={(e) => setNewCourseTitle(e.target.value)}
+          placeholder="Course Title *"
         />
         <input
           type="text"
-          value={newCourseContent}
-          onChange={(e) => setNewCourseContent(e.target.value)}
-          placeholder="Course Contents / Topics *"
+          value={newCourseDescription}
+          onChange={(e) => setNewCourseDescription(e.target.value)}
+          placeholder="Course Description *"
         />
 
         <button
@@ -99,8 +101,8 @@ const ManageCourse = () => {
         <button
           className="clear-btn"
           onClick={() => {
-            setNewCourseName("");
-            setNewCourseContent("");
+            setNewCourseTitle("");
+            setNewCourseDescription("");
             setEditIndex(null);
             setEditId(null);
           }}
@@ -117,8 +119,8 @@ const ManageCourse = () => {
             <div key={course.id ?? index} className="course-card">
               <div className="d-flex justify-content-between align-items-center flex-wrap">
                 <div>
-                  <h5 className="course-name">{course.name}</h5>
-                  <small className="course-info">{course.content}</small>
+                  <h5 className="course-name">{course.title}</h5>
+                  <small className="course-info">{course.description}</small>
                 </div>
                 <div className="course-actions">
                   <button className="btn-warning" onClick={() => handleEdit(index)}>
@@ -138,5 +140,6 @@ const ManageCourse = () => {
 };
 
 export default ManageCourse;
+
 
 

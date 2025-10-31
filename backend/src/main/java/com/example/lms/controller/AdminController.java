@@ -12,6 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin")
+@CrossOrigin(origins = "http://localhost:5173") // ✅ important
 public class AdminController {
 
     private final AdminService adminService;
@@ -20,8 +21,7 @@ public class AdminController {
     // Students
     @PostMapping("/students")
     public ResponseEntity<Student> addStudent(@RequestBody CreateStudentDto dto) {
-        Student s = adminService.addStudent(dto);
-        return ResponseEntity.ok(s);
+        return ResponseEntity.ok(adminService.addStudent(dto));
     }
 
     @GetMapping("/students")
@@ -32,8 +32,7 @@ public class AdminController {
     // Trainers
     @PostMapping("/trainers")
     public ResponseEntity<Trainer> addTrainer(@RequestBody Trainer trainer, @RequestParam String password) {
-        Trainer t = adminService.addTrainer(trainer, password);
-        return ResponseEntity.ok(t);
+        return ResponseEntity.ok(adminService.addTrainer(trainer, password));
     }
 
     @GetMapping("/trainers")
