@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../../Services/authService";
+import { trainerLogin, trainerSignup } from "../../Services/lmsService";
+
 import "../../index.css";
 
 const TrainerLogin = () => {
@@ -15,28 +16,28 @@ const TrainerLogin = () => {
 
     try {
       if (isSignIn) {
-        const res = await authService.login("trainer", { email, password });
-        if (res.token) {
-          alert("Trainer login successful!");
+        const res = await trainerLogin({ email, password }); // ✅ use trainerLogin
+        if (res.data?.token) {
+          alert("✅ Trainer login successful!");
           navigate("/trainer");
         } else {
-          alert(res.message || "Invalid credentials!");
+          alert(res.data?.message || "❌ Invalid credentials!");
         }
       } else {
         if (password !== confirmPassword) {
-          alert("Passwords do not match!");
+          alert("⚠️ Passwords do not match!");
           return;
         }
 
-        const res = await authService.signup("trainer", { email, password });
-        alert(res.message || "Signup successful!");
+        const res = await trainerSignup({ email, password }); // ✅ use trainerSignup
+        alert(res.data?.message || "✅ Signup successful!");
         setIsSignIn(true);
         setEmail("");
         setPassword("");
         setConfirmPassword("");
       }
     } catch (err) {
-      alert(err.response?.data?.message || "Something went wrong!");
+      alert(err.response?.data?.message || "⚠️ Something went wrong!");
     }
   };
 
@@ -99,5 +100,6 @@ const TrainerLogin = () => {
 };
 
 export default TrainerLogin;
+
 
 

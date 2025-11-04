@@ -1,75 +1,77 @@
-import React, { useState } from "react";
-import "../../index.css"; // Ensure correct path
+import React, { useEffect, useState } from "react";
+import "../../index.css";
+import TrainerService from "../../services/trainerService";
 
 const Feedback = () => {
+  const trainerId = parseInt(localStorage.getItem("trainerId"), 10);
+  const studentId = parseInt(localStorage.getItem("studentId"), 10);
   const [feedbacks, setFeedbacks] = useState([]);
-  const [newFeedback, setNewFeedback] = useState({ student: "", comment: "", rating: "" });
+  const [newFeedback, setNewFeedback] = useState({ message: "" });
 
-  const handleInputChange = (e) =>
-    setNewFeedback({ ...newFeedback, [e.target.name]: e.target.value });
+  useEffect(() => {
+    if (!trainerId) return;
+    TrainerService.getFeedbackForTrainer(trainerId)
+      .then((data) => setFeedbacks(data || []))
+      .catch(() => setFeedbacks([]));
+  }, [trainerId]);
 
-  const handleAddFeedback = () => {
-    if (!newFeedback.student || !newFeedback.comment || !newFeedback.rating) {
-      return alert("Fill all fields");
+  const handleAddFeedback = async () => {
+    if (!newFeedback.message.trim()) return alert("Enter feedback message.");
+    
+
+    const payload = {
+  message: newFeedback.message,
+  rating: 5,
+  studentName: "Anonymous",
+  trainer: { id: trainerId },
+};
+if (!trainerId) {
+  alert("Trainer not logged in!");
+  return;
+}
+console.log("Feedback Payload:", payload);
+try {
+      const saved = await TrainerService.addFeedback(payload);
+      setFeedbacks([saved, ...feedbacks]);
+      setNewFeedback({ message: "" });
+      alert("✅ Feedback added successfully!");
+    } catch (err) {
+      console.error("Add feedback error:", err);
+      alert("❌ Failed to add feedback.");
     }
-    setFeedbacks([{ id: Date.now(), ...newFeedback }, ...feedbacks]);
-    setNewFeedback({ student: "", comment: "", rating: "" });
   };
-
-  const handleDelete = (id) => setFeedbacks(feedbacks.filter((f) => f.id !== id));
 
   return (
     <div className="feedback-container">
-      <h2 className="feedback-title">Feedback</h2>
+      <h2 className="feedback-title">Trainer Feedback</h2>
 
-      {/* Form */}
       <div className="feedback-form">
         <input
           type="text"
-          name="student"
-          value={newFeedback.student}
-          onChange={handleInputChange}
-          placeholder="Student Name *"
-        />
-        <input
-          type="text"
-          name="comment"
-          value={newFeedback.comment}
-          onChange={handleInputChange}
-          placeholder="Comment *"
-        />
-        <input
-          type="number"
-          name="rating"
-          value={newFeedback.rating}
-          onChange={handleInputChange}
-          placeholder="Rating (1-5) *"
+          name="message"
+          value={newFeedback.message}
+          onChange={(e) =>
+            setNewFeedback({ ...newFeedback, message: e.target.value })
+          }
+          placeholder="Enter feedback message *"
         />
         <button className="add-btn" onClick={handleAddFeedback}>
           Add
         </button>
-        <button className="clear-btn" onClick={() => setNewFeedback({ student: "", comment: "", rating: "" })}>
-          Clear
-        </button>
       </div>
 
-      {/* Feedback List */}
       <div className="feedback-list">
         {feedbacks.length === 0 ? (
-          <p className="text-center text-muted fs-5">No feedback added yet</p>
+          <p>No feedback yet.</p>
         ) : (
           feedbacks.map((fb) => (
             <div key={fb.id} className="feedback-card">
-              <div>
-                <h5>{fb.student}</h5>
-                <small>{fb.comment}</small>
-                <div>Rating: {fb.rating} ⭐</div>
-              </div>
-              <div>
-                <button className="btn-danger" onClick={() => handleDelete(fb.id)}>
-                  Delete
-                </button>
-              </div>
+              <p>{fb.comments}</p>
+              <small>
+                {fb.submittedAt
+                  ? new Date(fb.submittedAt).toLocaleString()
+                  : "No timestamp"}
+              </small>
             </div>
           ))
         )}
@@ -79,3 +81,9 @@ const Feedback = () => {
 };
 
 export default Feedback;
+
+
+
+
+
+

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../../Services/authService";
+import authService from "../../Services/lmsService";
 
 import "../../index.css";
 

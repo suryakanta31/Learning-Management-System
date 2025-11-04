@@ -21,49 +21,56 @@ const StatCard = ({ title, count, color, bgColor }) => (
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const adminName = "Admin User";
+  const [adminName, setAdminName] = useState(""); // ✅ dynamic admin name
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState({});
-  const [stats, setStats] = useState({ students: 0, trainers: 0, courses: 0 });
+  const [stats, setStats] = useState({
+    trainers: 0,
+    courses: 0,
+    batches: 0,
+  });
 
-  // ✅ Fetch counts from backend
+  // ✅ Load admin name from localStorage
+  useEffect(() => {
+    const storedAdmin = localStorage.getItem("adminName");
+    if (storedAdmin) {
+      setAdminName(storedAdmin);
+    } else {
+      setAdminName("Admin");
+    }
+  }, []);
+
+  // ✅ Fetch counts
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("adminToken");
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const [studentsRes, trainersRes, coursesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/student/", { headers }),
-        axios.get("http://localhost:8080/api/trainer/", { headers }),
-        axios.get("http://localhost:8080/api/course/", { headers }),
+      const [trainersRes, coursesRes, batchesRes] = await Promise.all([
+        axios.get("http://localhost:8080/api/trainers/"),
+        axios.get("http://localhost:8080/api/course/"),
+        axios.get("http://localhost:8080/api/batches/"),
       ]);
 
       setStats({
-        students: studentsRes.data.length,
         trainers: trainersRes.data.length,
         courses: coursesRes.data.length,
+        batches: batchesRes.data.length,
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
     }
   };
 
-  // ✅ On mount, load stats from backend
   useEffect(() => {
     fetchStats();
   }, []);
 
-  // ✅ Reusable updater functions (used by child routes)
   const incrementStat = (type) => {
     setStats((prev) => ({ ...prev, [type]: prev[type] + 1 }));
   };
 
-  const decrementStat = (type) => {
-    setStats((prev) => ({ ...prev, [type]: Math.max(prev[type] - 1, 0) }));
-  };
-
+  // ✅ Logout clears all admin data
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
+    localStorage.removeItem("adminName");
     navigate("/adminlogin");
   };
 
@@ -74,12 +81,6 @@ const AdminDashboard = () => {
   const menuItems = [
     { label: "Dashboard", icon: "📊", path: "/admin" },
     {
-      label: "Students",
-      icon: "👤",
-      key: "students",
-      dropdown: [{ label: "Add & Manage Students", path: "/admin/addstudent" }],
-    },
-    {
       label: "Trainers",
       icon: "🧑‍🏫",
       key: "trainers",
@@ -89,7 +90,13 @@ const AdminDashboard = () => {
       label: "Courses",
       icon: "📚",
       key: "courses",
-      dropdown: [{ label: "Add & Manage Course", path: "/admin/managecourse" }],
+      dropdown: [{ label: "Add & Manage Courses", path: "/admin/managecourse" }],
+    },
+    {
+      label: "Batches",
+      icon: "🗓️",
+      key: "batches",
+      dropdown: [{ label: "Add & Manage Batches", path: "/admin/managebatches" }],
     },
     {
       label: "Reports",
@@ -100,9 +107,9 @@ const AdminDashboard = () => {
   ];
 
   const chartData = [
-    { name: "Students", total: stats.students },
     { name: "Trainers", total: stats.trainers },
     { name: "Courses", total: stats.courses },
+    { name: "Batches", total: stats.batches },
   ];
 
   return (
@@ -120,10 +127,7 @@ const AdminDashboard = () => {
             <li key={idx}>
               {item.dropdown ? (
                 <>
-                  <div
-                    className="menu-item"
-                    onClick={() => toggleDropdown(item.key)}
-                  >
+                  <div className="menu-item" onClick={() => toggleDropdown(item.key)}>
                     <span className="icon">{item.icon}</span>
                     {sidebarOpen && <span>{item.label}</span>}
                     {sidebarOpen && (
@@ -166,27 +170,11 @@ const AdminDashboard = () => {
           <span>{adminName}</span>
         </div>
 
-        {/* Stats & Chart */}
         <div className="stats-chart">
           <div className="stats-cards">
-            <StatCard
-              title="Total Students"
-              count={stats.students}
-              color="primary"
-              bgColor="#e0f7fa"
-            />
-            <StatCard
-              title="Total Trainers"
-              count={stats.trainers}
-              color="success"
-              bgColor="#e8f5e9"
-            />
-            <StatCard
-              title="Active Courses"
-              count={stats.courses}
-              color="danger"
-              bgColor="#fff3e0"
-            />
+            <StatCard title="Total Trainers" count={stats.trainers} color="primary" bgColor="#e0f7fa" />
+            <StatCard title="Active Courses" count={stats.courses} color="success" bgColor="#e8f5e9" />
+            <StatCard title="Total Batches" count={stats.batches} color="danger" bgColor="#fff3e0" />
           </div>
 
           <div className="chart-container">
@@ -202,9 +190,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* Child Outlet (passes increment/decrement functions) */}
         <div className="child-outlet">
-          <Outlet context={{ incrementStat, decrementStat, fetchStats }} />
+          <Outlet context={{ incrementStat, fetchStats }} />
         </div>
       </main>
     </div>
@@ -212,3 +199,5 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+

@@ -1,52 +1,34 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import authService from "../../Services/authService";
-
+import { adminLogin } from "../../services/lmsService";
 import "../../index.css";
 
 const AdminLogin = () => {
-  const [isSignIn, setIsSignIn] = useState(true);
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      if (isSignIn) {
-        // 🔐 Admin Login
-        const res = await authService.login("admin", { email, password });
+      const res = await adminLogin({ email, password });
 
-        if (res.token) {
-          alert("✅ Admin login successful!");
-          navigate("/admin");
-        } else {
-          alert(res.message || "❌ Invalid credentials!");
-        }
+      if (res.data) {
+        // ✅ Store admin info
+        localStorage.setItem("adminToken", res.data.token || "dummyToken");
+        localStorage.setItem("adminName", res.data.name || "Admin");
+
+        alert("✅ Admin login successful!");
+        navigate("/admin"); // Redirect to dashboard
       } else {
-        // 🧾 Admin Signup
-        if (password !== confirmPassword) {
-          alert("⚠️ Passwords do not match!");
-          setLoading(false);
-          return;
-        }
-
-        const res = await authService.signup("admin", { name, email, password });
-        alert(res.message || "✅ Signup successful!");
-        setIsSignIn(true);
-        setName("");
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
+        alert("❌ Invalid credentials!");
       }
     } catch (err) {
-      console.error("Auth error:", err);
-      alert(err.response?.data?.message || "⚠️ Something went wrong!");
+      console.error("Admin login error:", err);
+      alert(err.response?.data?.message || "⚠️ Login failed! Check console.");
     } finally {
       setLoading(false);
     }
@@ -55,28 +37,13 @@ const AdminLogin = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">
-          {isSignIn ? "Admin Sign In" : "Admin Sign Up"}
-        </h2>
+        <h2 className="login-title">Admin Login</h2>
 
-        <form onSubmit={handleSubmit} className="login-form">
-          {!isSignIn && (
-            <input
-              type="text"
-              name="name"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="login-input"
-              required
-              autoComplete="name"
-            />
-          )}
-
+        <form onSubmit={handleLogin} className="login-form">
           <input
             type="email"
             name="email"
-            placeholder="Email"
+            placeholder="Admin Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="login-input"
@@ -92,53 +59,21 @@ const AdminLogin = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="login-input"
             required
-            autoComplete={isSignIn ? "current-password" : "new-password"}
+            autoComplete="current-password"
           />
 
-          {!isSignIn && (
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="login-input"
-              required
-              autoComplete="new-password"
-            />
-          )}
-
           <button type="submit" className="login-btn" disabled={loading}>
-            {loading
-              ? isSignIn
-                ? "Signing In..."
-                : "Signing Up..."
-              : isSignIn
-              ? "Sign In"
-              : "Sign Up"}
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
-
-        <p className="login-toggle-text">
-          {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span
-            className="login-toggle-link"
-            onClick={() => {
-              setIsSignIn(!isSignIn);
-              setName("");
-              setEmail("");
-              setPassword("");
-              setConfirmPassword("");
-            }}
-          >
-            {isSignIn ? "Sign Up" : "Sign In"}
-          </span>
-        </p>
       </div>
     </div>
   );
 };
 
 export default AdminLogin;
+
+
+
 
 

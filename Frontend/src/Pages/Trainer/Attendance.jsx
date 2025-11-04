@@ -1,36 +1,58 @@
-import React, { useState } from "react";
-import "../../index.css"; // make sure path is correct
+import React, { useEffect, useState } from "react";
+import "../../index.css";
+import TrainerService from "../../services/trainerService";
 
 const Attendance = () => {
-  const [students, setStudents] = useState([
-    { id: 1, name: "Surya Kanta", course: "React Basics" },
-    { id: 2, name: "Omm Prakash", course: "Java Spring" },
-    { id: 3, name: "Rahul", course: "Python Data Science" },
-  ]);
-
+  const trainerId = localStorage.getItem("trainerId");
+  const [students, setStudents] = useState([]);
   const [attendance, setAttendance] = useState({});
+
+  useEffect(() => {
+    if (!trainerId) return;
+    TrainerService.getStudentsForTrainer(trainerId)
+      .then((res) => setStudents(res || []))
+      .catch(() => setStudents([]));
+  }, [trainerId]);
 
   const handleChange = (id, value) =>
     setAttendance((prev) => ({ ...prev, [id]: value }));
 
-  const handleSave = () => {
-    console.log("Attendance data:", attendance);
-    alert("Attendance saved successfully!");
+  const handleSave = async () => {
+    if (!trainerId) return alert("Trainer ID missing!");
+
+    try {
+      const payloads = Object.entries(attendance).map(([studentId, status]) => ({
+        student: { id: parseInt(studentId, 10) },
+        date: new Date().toISOString().slice(0, 10),
+        present: status === "Present",
+      }));
+
+      await Promise.all(
+        payloads.map((p) => TrainerService.markAttendance(trainerId, p))
+      );
+
+      alert("✅ Attendance saved successfully!");
+    } catch (err) {
+      console.error("Save attendance error:", err);
+      alert("❌ Could not save attendance.");
+    }
   };
 
   return (
     <div className="attendance-container">
-      <h2 className="attendance-title">Attendance</h2>
+      <h2 className="attendance-title">Mark Attendance</h2>
 
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         {students.length === 0 ? (
-          <p className="text-center text-muted fs-5 mt-3">No students available</p>
+          <p className="text-center text-muted fs-5 mt-3">
+            No students assigned yet.
+          </p>
         ) : (
           students.map((student) => (
             <div key={student.id} className="attendance-card">
               <div>
                 <h5>{student.name}</h5>
-                <small>{student.course}</small>
+                <small>{student.email}</small>
               </div>
 
               <select
@@ -59,4 +81,9 @@ const Attendance = () => {
 };
 
 export default Attendance;
+
+
+
+
+
 

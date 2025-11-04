@@ -1,7 +1,6 @@
-// src/Pages/Admin/AddTrainer.jsx
 import React, { useState, useEffect } from "react";
 import { useOutletContext } from "react-router-dom";
-import api from "../../Services/api";
+import lmsService from "../../services/lmsService";
 import "../../index.css";
 
 const AddTrainer = () => {
@@ -10,19 +9,20 @@ const AddTrainer = () => {
   const [newTrainer, setNewTrainer] = useState({
     name: "",
     email: "",
+    password: "",
     phone: "",
     skill: "",
     experience: "",
     qualification: "",
   });
-  const [editId, setEditId] = useState(null);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editedTrainer, setEditedTrainer] = useState({});
 
-  // load trainers
+  // ✅ Load all trainers
   useEffect(() => {
     (async () => {
       try {
-        const res = await api.get("/trainer/"); // GET /api/trainer/
+        const res = await lmsService.getAllTrainers();
         setTrainers(res.data || []);
       } catch (err) {
         console.error("Error loading trainers:", err);
@@ -30,67 +30,78 @@ const AddTrainer = () => {
     })();
   }, []);
 
+  // ✅ Handle input for new trainer (top form)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewTrainer({ ...newTrainer, [name]: value });
   };
 
-  const handleAddOrUpdate = async () => {
-    if (!newTrainer.name || !newTrainer.email) {
-      alert("Please fill in required fields (Name & Email)");
+  // ✅ Add trainer
+  const handleAddTrainer = async () => {
+    if (!newTrainer.name || !newTrainer.email || !newTrainer.password) {
+      alert("Please fill required fields (Name, Email & Password)");
       return;
     }
 
     try {
-      if (editId) {
-        // update PUT /api/trainer/update/{id}
-        await api.put(`/trainer/update/${editId}`, newTrainer);
-        setTrainers(prev => prev.map((t, i) => (i === editIndex ? { ...t, ...newTrainer } : t)));
-        setEditId(null);
-        setEditIndex(null);
-      } else {
-        // add POST /api/trainer/add
-        const res = await api.post("/trainer/add", newTrainer);
-        if (res?.data) {
-          setTrainers(prev => [res.data, ...prev]);
-        } else {
-          const r2 = await api.get("/trainer/");
-          setTrainers(r2.data || []);
-        }
-        incrementStat && incrementStat("trainers");
-      }
+      const adminId = localStorage.getItem("adminId");
+      const res = await lmsService.addTrainer(adminId, newTrainer);
+      if (res?.data) setTrainers((prev) => [res.data, ...prev]);
+      incrementStat && incrementStat("trainers");
 
       setNewTrainer({
         name: "",
         email: "",
+        password: "",
         phone: "",
         skill: "",
         experience: "",
         qualification: "",
       });
     } catch (err) {
-      console.error("Error saving trainer:", err);
-      alert("Failed to save trainer — check console.");
+      console.error("Error adding trainer:", err);
+      alert("Failed to add trainer — check console.");
     }
   };
 
-  const handleEdit = (trainer, index) => {
-    setNewTrainer(trainer);
-    setEditId(trainer.id ?? null);
-    setEditIndex(index);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  // ✅ Edit row
+  const handleEditRow = (trainer) => {
+    setEditRowId(trainer.id);
+    setEditedTrainer({ ...trainer });
   };
 
-  const handleDelete = (id) => {
-    // Delete is intentionally disabled in the UI. Manage removal from DB only.
-    alert("Delete disabled. Remove trainers directly from the database if needed.");
+  // ✅ Handle edit row changes
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditedTrainer({ ...editedTrainer, [name]: value });
+  };
+
+  // ✅ Save edited row
+  const handleSaveRow = async () => {
+    try {
+      await lmsService.updateTrainer(editRowId, editedTrainer);
+      setTrainers((prev) =>
+        prev.map((t) => (t.id === editRowId ? editedTrainer : t))
+      );
+      setEditRowId(null);
+      setEditedTrainer({});
+    } catch (err) {
+      console.error("Error updating trainer:", err);
+      alert("Failed to update trainer.");
+    }
+  };
+
+  // ✅ Cancel editing
+  const handleCancelEdit = () => {
+    setEditRowId(null);
+    setEditedTrainer({});
   };
 
   return (
     <div className="trainer-container">
       <h2 className="trainer-title">Trainer Management</h2>
 
-      {/* Form */}
+      {/* Add Form */}
       <div className="trainer-form">
         <input
           type="text"
@@ -105,6 +116,13 @@ const AddTrainer = () => {
           value={newTrainer.email}
           onChange={handleInputChange}
           placeholder="Email *"
+        />
+        <input
+          type="password"
+          name="password"
+          value={newTrainer.password}
+          onChange={handleInputChange}
+          placeholder="Password *"
         />
         <input
           type="text"
@@ -135,63 +153,133 @@ const AddTrainer = () => {
           placeholder="Qualification"
         />
 
-        <button className="add-btn" onClick={handleAddOrUpdate}>
-          {editId ? "Update" : "Add"}
-        </button>
-        <button
-          className="clear-btn"
-          onClick={() =>
-            setNewTrainer({
-              name: "",
-              email: "",
-              phone: "",
-              skill: "",
-              experience: "",
-              qualification: "",
-            })
-          }
-        >
-          Clear
+        <button className="add-btn" onClick={handleAddTrainer}>
+          Add
         </button>
       </div>
 
-      {/* Trainer List */}
-      <div className="trainer-list">
+      {/* Trainer Table */}
+      <div className="trainer-table mt-4">
         {trainers.length === 0 ? (
-          <p className="text-center text-muted fs-5 mt-3">No trainers added yet</p>
+          <p className="text-center text-muted fs-5">No trainers added yet</p>
         ) : (
-          trainers.map((trainer, idx) => (
-            <div key={trainer.id ?? idx} className="trainer-card">
-              <div className="d-flex justify-content-between align-items-center flex-wrap">
-                <div className="trainer-info">
-                  <h5 className="trainer-name">{trainer.name}</h5>
-                  <small>
-                    {trainer.email} • {trainer.skill || "No skill"} •{" "}
-                    {trainer.experience ? `${trainer.experience} yrs` : ""}
-                  </small>
-                  <small>
-                    {trainer.phone && `📞 ${trainer.phone}`}{" "}
-                    {trainer.qualification && `🎓 ${trainer.qualification}`}
-                  </small>
-                </div>
-                <div className="trainer-actions mt-2 mt-md-0">
-                  <button
-                    className="btn btn-sm btn-warning me-2"
-                    onClick={() => handleEdit(trainer, idx)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-danger"
-                    disabled
-                    onClick={() => handleDelete(trainer.id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+          <table className="styled-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Password</th>
+                <th>Phone</th>
+                <th>Skill</th>
+                <th>Experience</th>
+                <th>Qualification</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trainers.map((trainer, idx) =>
+                editRowId === trainer.id ? (
+                  <tr key={trainer.id}>
+                    <td>{idx + 1}</td>
+                    <td>
+                      <input
+                        type="text"
+                        name="name"
+                        value={editedTrainer.name}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editedTrainer.email}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="password"
+                        name="password"
+                        value={editedTrainer.password || ""}
+                        onChange={handleEditChange}
+                        placeholder="••••••"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={editedTrainer.phone || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="skill"
+                        value={editedTrainer.skill || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="number"
+                        name="experience"
+                        value={editedTrainer.experience || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="qualification"
+                        value={editedTrainer.qualification || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-success me-2"
+                        onClick={handleSaveRow}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="btn btn-sm btn-secondary"
+                        onClick={handleCancelEdit}
+                      >
+                        Cancel
+                      </button>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={trainer.id}>
+                    <td>{idx + 1}</td>
+                    <td>{trainer.name}</td>
+                    <td>{trainer.email}</td>
+                    <td>{trainer.password ? "••••••" : "-"}</td>
+                    <td>{trainer.phone || "-"}</td>
+                    <td>{trainer.skill || "-"}</td>
+                    <td>{trainer.experience || "-"}</td>
+                    <td>{trainer.qualification || "-"}</td>
+                    <td>
+                      <button
+                        className="btn btn-sm btn-warning me-2"
+                        onClick={() => handleEditRow(trainer)}
+                      >
+                        Edit
+                      </button>
+                      <button className="btn btn-sm btn-danger" disabled>
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+              )}
+            </tbody>
+          </table>
         )}
       </div>
     </div>
@@ -199,4 +287,9 @@ const AddTrainer = () => {
 };
 
 export default AddTrainer;
+
+
+
+
+
 

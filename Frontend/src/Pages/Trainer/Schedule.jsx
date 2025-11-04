@@ -1,81 +1,117 @@
-import React, { useState } from "react";
-import "../../index.css"; // Make sure CSS path is correct
+import React, { useEffect, useState } from "react";
+import "../../index.css";
+import TrainerService from "../../services/trainerService";
 
 const Schedule = () => {
+  const trainerId = parseInt(localStorage.getItem("trainerId"), 10);
+  const [batches, setBatches] = useState([]);
   const [sessions, setSessions] = useState([]);
-  const [newSession, setNewSession] = useState({ title: "", date: "", time: "" });
+  const [selectedBatch, setSelectedBatch] = useState("");
+  const [newSession, setNewSession] = useState({ topic: "" });
+  const [loading, setLoading] = useState(false);
 
-  const handleInputChange = (e) =>
-    setNewSession({ ...newSession, [e.target.name]: e.target.value });
+  // ✅ Load batches and sessions for trainer
+  useEffect(() => {
+    if (!trainerId) {
+      alert("Trainer not logged in!");
+      return;
+    }
 
-  const handleAddSession = () => {
-    if (!newSession.title || !newSession.date || !newSession.time)
-      return alert("Fill all fields");
-    setSessions([{ id: Date.now(), ...newSession }, ...sessions]);
-    setNewSession({ title: "", date: "", time: "" });
+    const loadTrainerData = async () => {
+      try {
+        const [batchesData, sessionsData] = await Promise.all([
+          TrainerService.getBatchesForTrainer(trainerId),
+          TrainerService.getSessionsByTrainer(trainerId),
+        ]);
+        setBatches(batchesData || []);
+        setSessions(sessionsData || []);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        alert("Failed to load trainer data.");
+      }
+    };
+
+    loadTrainerData();
+  }, [trainerId]);
+
+  // ✅ Add session
+  const handleAddSession = async () => {
+    if (!selectedBatch) return alert("Please select a batch!");
+    if (!newSession.topic.trim()) return alert("Enter session topic!");
+
+    const sessionData = {
+      topic: newSession.topic.trim(),
+      scheduledAt: new Date().toISOString(),
+      batch: { id: Number(selectedBatch) },
+      trainer: { id: trainerId },
+    };
+
+    console.log("📦 Session Payload:", sessionData);
+
+    try {
+      setLoading(true);
+      const added = await TrainerService.addSession(sessionData);
+      alert("✅ Session added successfully!");
+      setNewSession({ topic: "" });
+      setSessions([...sessions, added]);
+    } catch (err) {
+      console.error("❌ Error adding session:", err);
+      alert("Failed to add session. Check console for details.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  const handleDelete = (id) =>
-    setSessions(sessions.filter((s) => s.id !== id));
 
   return (
     <div className="schedule-container">
-      <h2 className="schedule-title">Schedule</h2>
+      <h2 className="schedule-title">Manage Schedule</h2>
 
-      {/* Inline Form */}
       <div className="schedule-form">
+        <select
+          value={selectedBatch}
+          onChange={(e) => setSelectedBatch(e.target.value)}
+          className="course-select"
+        >
+          <option value="">Select Batch</option>
+          {batches.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name} — {b.course?.title}
+            </option>
+          ))}
+        </select>
+
         <input
           type="text"
-          name="title"
-          placeholder="Session Title *"
-          value={newSession.title}
-          onChange={handleInputChange}
+          name="topic"
+          value={newSession.topic}
+          onChange={(e) => setNewSession({ topic: e.target.value })}
+          placeholder="Session Topic"
+          className="schedule-input"
         />
-        <input
-          type="date"
-          name="date"
-          value={newSession.date}
-          onChange={handleInputChange}
-        />
-        <input
-          type="time"
-          name="time"
-          value={newSession.time}
-          onChange={handleInputChange}
-        />
-        <button className="add-btn" onClick={handleAddSession}>
-          Add
-        </button>
+
         <button
-          className="clear-btn"
-          onClick={() => setNewSession({ title: "", date: "", time: "" })}
+          onClick={handleAddSession}
+          className="schedule-add-btn"
+          disabled={loading}
         >
-          Clear
+          {loading ? "Adding..." : "Add Session"}
         </button>
       </div>
 
-      {/* Sessions List */}
       <div className="schedule-list">
         {sessions.length === 0 ? (
-          <p className="text-center text-muted fs-5">
-            No sessions scheduled yet
-          </p>
+          <p className="text-muted">No sessions yet.</p>
         ) : (
-          sessions.map((sess) => (
-            <div key={sess.id} className="schedule-card">
-              <div>
-                <h5>{sess.title}</h5>
-                <small>
-                  {sess.date} at {sess.time}
-                </small>
-              </div>
-              <div className="schedule-actions">
-                <button className="btn-danger" onClick={() => handleDelete(sess.id)}>
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
+          <ul>
+            {sessions.map((s) => (
+              <li key={s.id}>
+                {s.topic} —{" "}
+                {s.scheduledAt
+                  ? new Date(s.scheduledAt).toLocaleString()
+                  : "No date"}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>
@@ -83,4 +119,8 @@ const Schedule = () => {
 };
 
 export default Schedule;
+
+
+
+
 

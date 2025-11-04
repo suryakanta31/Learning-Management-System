@@ -1,54 +1,61 @@
 package com.example.lms.controller;
 
+import com.example.lms.entity.Admin;
 import com.example.lms.entity.Trainer;
-import com.example.lms.entity.Attendance;
+import com.example.lms.repository.AdminRepository;
+import com.example.lms.repository.TrainerRepository;
 import com.example.lms.service.TrainerService;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/trainer")
+@RequestMapping("/api/trainers")
 @CrossOrigin(origins = "http://localhost:5173")
 public class TrainerController {
 
-    private final TrainerService trainerService;
+    @Autowired
+    private TrainerService trainerService;
 
-    public TrainerController(TrainerService trainerService) {
-        this.trainerService = trainerService;
+    @Autowired
+    private AdminRepository adminRepository;
+
+    @Autowired
+    private TrainerRepository trainerRepository;
+
+    // ✅ Admin adds a trainer
+    @PostMapping("/add/{adminId}")
+    public Trainer addTrainer(@PathVariable Long adminId, @RequestBody Trainer trainer) {
+        Admin admin = adminRepository.findById(adminId).orElseThrow();
+        return trainerService.addTrainer(trainer, admin);
     }
 
-    // ✅ Add new trainer
-    @PostMapping("/add")
-    public ResponseEntity<Trainer> addTrainer(@RequestBody Trainer trainer) {
-        Trainer saved = trainerService.saveTrainer(trainer);
-        return ResponseEntity.ok(saved);
+    // ✅ Trainer signup (optional, if trainers self-register)
+    @PostMapping("/signup")
+    public Trainer signup(@RequestBody Trainer trainer) {
+        return trainerRepository.save(trainer);
     }
 
-    // ✅ Get all trainers
+    // ✅ Trainer login
+    @PostMapping("/login")
+    public Trainer login(@RequestBody Trainer loginRequest) {
+        Trainer trainer = trainerRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+        if (!trainer.getPassword().equals(loginRequest.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+        return trainer;
+    }
+
+    // ✅ Fetch all trainers
     @GetMapping("/")
-    public ResponseEntity<List<Trainer>> getAllTrainers() {
-        return ResponseEntity.ok(trainerService.getAllTrainers());
+    public List<Trainer> getAllTrainers() {
+        return trainerService.getAllTrainers();
     }
 
-    // ✅ Mark attendance (existing)
-    @PostMapping("/{trainerId}/attendance")
-    public ResponseEntity<?> markAttendance(@PathVariable Long trainerId, @RequestBody Attendance attendance) {
-        Attendance saved = trainerService.markAttendance(attendance);
-        return ResponseEntity.ok(saved);
-    }
-
-    // ✅ Update trainer
+    // ✅ Update trainer info
     @PutMapping("/update/{id}")
-    public ResponseEntity<Trainer> updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
-        Trainer updated = trainerService.updateTrainer(id, trainer);
-        return ResponseEntity.ok(updated);
-    }
-
-    // ✅ Delete trainer
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> deleteTrainer(@PathVariable Long id) {
-        trainerService.deleteTrainer(id);
-        return ResponseEntity.ok("Deleted successfully");
+    public Trainer updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
+        return trainerService.updateTrainer(id, trainer);
     }
 }

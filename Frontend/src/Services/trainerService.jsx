@@ -1,15 +1,11 @@
+// src/services/trainerService.js
 import api from "./api";
 
-// Trainer Dashboard
-export const getMyBatches = (trainerId) => api.get(`/trainer/${trainerId}/batches`);
+const TrainerService = {
+  getTrainerBatches: (trainerId) => api.get(`/trainer/${trainerId}/batches`),
+  getTrainerCourses: (trainerId) => api.get(`/trainer/${trainerId}/courses`),
+  getTrainerSchedule: (trainerId) => api.get(`/trainer/${trainerId}/schedule`),
+  // add other trainer-related APIs here
+};
 
-// Attendance
-export const markAttendance = (trainerId, data) =>
-  api.post(`/trainer/${trainerId}/attendance`, data);
-
-// Feedback
-export const submitFeedback = (trainerId, data) =>
-  api.post(`/trainer/${trainerId}/feedback`, data);
-
-// My Courses
-export const getMyCourses = (trainerId) => api.get(`/trainer/${trainerId}/courses`);
+export default TrainerService;

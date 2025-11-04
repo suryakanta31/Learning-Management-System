@@ -4,14 +4,24 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "trainers")
 public class Trainer {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
+    @Column(unique = true)
     private String email;
-    private String expertise;
-    @OneToOne
-    private User user;
+
+    private String password;
+
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Admin admin;  // Foreign key relationship
 }
 

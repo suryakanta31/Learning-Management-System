@@ -1,35 +1,62 @@
-import React, { useState } from "react";
-import "../../index.css"; // Make sure CSS file path is correct
+// src/pages/Trainer/MyCourses.jsx
+import React, { useEffect, useState } from "react";
+import "../../index.css";
+import TrainerService from "../../services/trainerService";
 
 const MyCourses = () => {
   const [courses, setCourses] = useState([]);
   const [newCourse, setNewCourse] = useState({ title: "", description: "" });
   const [editId, setEditId] = useState(null);
 
+  useEffect(() => {
+    TrainerService.getCourses()
+      .then((data) => setCourses(data))
+      .catch((err) => {
+        console.error("Get courses error:", err);
+        setCourses([]);
+      });
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setNewCourse({ ...newCourse, [name]: value });
   };
 
-  const handleAddOrUpdate = () => {
+  const handleAddOrUpdate = async () => {
     if (!newCourse.title.trim()) return alert("Course title required");
 
-    if (editId) {
-      setCourses(courses.map(c => (c.id === editId ? { ...c, ...newCourse } : c)));
-      setEditId(null);
-    } else {
-      setCourses([{ id: Date.now(), ...newCourse }, ...courses]);
+    try {
+      if (editId) {
+        await TrainerService.updateCourse(editId, newCourse);
+        setCourses(courses.map((c) => (c.id === editId ? { ...c, ...newCourse } : c)));
+        setEditId(null);
+      } else {
+        const saved = await TrainerService.addCourse(newCourse);
+        setCourses([{ ...saved }, ...courses]);
+      }
+      setNewCourse({ title: "", description: "" });
+    } catch (err) {
+      console.error("Add/update course error:", err);
+      alert("Could not save course.");
     }
-    setNewCourse({ title: "", description: "" });
   };
 
   const handleEdit = (course) => {
-    setNewCourse(course);
+    setNewCourse({ title: course.title, description: course.description });
     setEditId(course.id);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = (id) => setCourses(courses.filter(c => c.id !== id));
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this course?")) return;
+    try {
+      await TrainerService.deleteCourse(id);
+      setCourses(courses.filter((c) => c.id !== id));
+    } catch (err) {
+      console.error("Delete course error:", err);
+      alert("Could not delete course.");
+    }
+  };
 
   return (
     <div className="courses-container">
@@ -83,4 +110,5 @@ const MyCourses = () => {
 };
 
 export default MyCourses;
+
 

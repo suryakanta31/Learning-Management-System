@@ -1,7 +1,17 @@
-import React, { useState } from "react";
+// src/pages/Trainer/TrainerDashboard.jsx
+import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import "../../index.css";
+import TrainerService from "../../services/trainerService";
 
 const StatCard = ({ title, count, color, bgColor }) => (
   <div className="stat-card" style={{ background: bgColor }}>
@@ -12,10 +22,41 @@ const StatCard = ({ title, count, color, bgColor }) => (
 
 const TrainerDashboard = () => {
   const navigate = useNavigate();
-  const trainerName = "Trainer User";
+  const trainerName = localStorage.getItem("trainerName") || "Trainer User";
+  const trainerId = localStorage.getItem("trainerId"); // ensure you store id on login
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [stats, setStats] = useState({ courses: 0, students: 0, sessions: 0 });
+
+  useEffect(() => {
+    if (!trainerId) return;
+
+    // Fetch counts: courses assigned (filter courses by trainer if you store that relation),
+    // students count (sum of batch/student in batches) and sessions (batches)
+    Promise.all([TrainerService.getCourses(), TrainerService.getBatchesForTrainer(trainerId)])
+      .then(([courses, batches]) => {
+        // If your Course entity doesn't carry trainer info, admin assigns courses — adjust if necessary.
+        // We'll treat all courses as available -> Trainer assigned courses are from batches (Batch has course + trainer)
+        const trainerCourses = batches.map((b) => b.getCourse ? b.course : b.course).filter(Boolean);
+        const distinctCourseIds = new Set(trainerCourses.map((c) => c.id ?? c.id));
+        const courseCount = distinctCourseIds.size || trainerCourses.length || 0;
+
+        // students count: if batch contains students relation on backend, you'd fetch that.
+        // Since backend batch doesn't include students currently, we approximate students = 0 or expose via extra endpoint.
+        // If your Batch entity includes student list, adjust accordingly.
+        const sessionCount = batches.length;
+
+        setStats((prev) => ({
+          ...prev,
+          courses: courseCount,
+          sessions: sessionCount,
+          // students: left as is until a students endpoint is available
+        }));
+      })
+      .catch((err) => {
+        console.error("Dashboard fetch error:", err);
+      });
+  }, [trainerId]);
 
   const incrementStat = (type) =>
     setStats((prev) => ({ ...prev, [type]: prev[type] + 1 }));
@@ -24,6 +65,7 @@ const TrainerDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("trainerToken");
+    localStorage.removeItem("trainerId");
     navigate("/trainerlogin");
   };
 
@@ -104,6 +146,7 @@ const TrainerDashboard = () => {
 };
 
 export default TrainerDashboard;
+
 
 
 

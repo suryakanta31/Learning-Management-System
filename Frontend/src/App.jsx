@@ -1,35 +1,3 @@
-
-/*import React from 'react'
-import{ BrowserRouter as Router, Route, createBrowserRouter, createRoutesFromElements, RouterProvider } from 'react-router-dom'
-import TrainerLogin from './Pages/TrainerLogin'
-//import Home from './Pages/Home'
-import StudentLogin from './Pages/StudentLogin'
-import AdminLogin from './Pages/AdminLogin'
-import Contact from './Pages/Contact'
-import Rootlayout from './Layout/Rootlayout'
-
-const App = () => {
-      
-  const router = createBrowserRouter(
-    createRoutesFromElements(
-      
-        <Route path='/' element={<Rootlayout/>}>
-        
-        <Route path='studentlogin' element={<StudentLogin/>}/>
-        <Route path='adminlogin' element={<AdminLogin/>}/>
-        <Route path='contact' element={<Contact/>}/>
-        <Route path='trainerlogin' element={<TrainerLogin/>}/>
-
-        </Route>
-    )
-  )
-  return (
-    <RouterProvider router={router}/>
-  )
-}
-
-export default App */
-// src/App.jsx
 import React from "react";
 import {
   createBrowserRouter,
@@ -46,6 +14,7 @@ import AdminLogin from "./Pages/Admin/AdminLogin";
 import AdminDashboard from "./Pages/Admin/AdminDashboard";
 import AddTrainer from "./Pages/Admin/AddTrainer";
 import AddStudent from "./Pages/Admin/AddStudent";
+import ManageBatches from "./Pages/Admin/ManageBatches";
 import ManageCourse from "./Pages/Admin/ManageCourse";
 import ReportsAnalytics from "./Pages/Admin/ReportsAnalytics";
 
@@ -71,25 +40,21 @@ import TrainerFeedback from "./Pages/Student/TrainerFeedback";
 import Contact from "./Pages/Contact";
 import Rootlayout from "./Layout/Rootlayout";
 
-// ===================== Services =====================
-import authService from "./Services/authService";
 
-// ✅ FIXED AUTH CHECK FUNCTION
-const requireAuth = (expectedRole) => {
-  const currentUser = authService.getCurrentUser();
+// ✅ Add this function (no authService needed)
+const requireAuth = (role) => {
+  const adminToken = localStorage.getItem("adminToken");
+  const trainerToken = localStorage.getItem("trainerToken");
+  const studentToken = localStorage.getItem("studentToken");
 
-  if (!currentUser) {
-    throw redirect(`/${expectedRole}login`);
-  }
+  // check based on role
+  if (role === "admin" && !adminToken) throw redirect("/adminlogin");
+  if (role === "trainer" && !trainerToken) throw redirect("/trainerlogin");
+  if (role === "student" && !studentToken) throw redirect("/studentlogin");
 
-  // ✅ If logged in but wrong role → redirect to correct dashboard
-  if (currentUser.role !== expectedRole) {
-    throw redirect(`/${currentUser.role}`);
-  }
-
-  // ✅ Otherwise continue
   return null;
 };
+
 
 const App = () => {
   const router = createBrowserRouter(
@@ -112,6 +77,7 @@ const App = () => {
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
           <Route path="managecourse" element={<ManageCourse />} />
+          <Route path="managebatches" element={<ManageBatches />} />
           <Route path="reportsanalytics" element={<ReportsAnalytics />} />
         </Route>
 
