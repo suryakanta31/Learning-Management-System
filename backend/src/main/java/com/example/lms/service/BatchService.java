@@ -23,7 +23,7 @@ public class BatchService {
 
     public Batch updateBatch(Long id, Batch updatedBatch) {
         Batch batch = batchRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Batch not found"));
+                .orElseThrow(() -> new RuntimeException("Batch not found with ID: " + id));
         batch.setBatchName(updatedBatch.getBatchName());
         batch.setStartDate(updatedBatch.getStartDate());
         batch.setEndDate(updatedBatch.getEndDate());
@@ -32,6 +32,9 @@ public class BatchService {
     }
 
     public void deleteBatch(Long id) {
+        if (!batchRepository.existsById(id)) {
+            throw new RuntimeException("Batch not found with ID: " + id);
+        }
         batchRepository.deleteById(id);
     }
 }

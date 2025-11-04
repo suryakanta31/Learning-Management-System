@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   BarChart,
@@ -21,53 +21,58 @@ const StatCard = ({ title, count, color, bgColor }) => (
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [adminName, setAdminName] = useState(""); // ✅ dynamic admin name
+  const [adminName, setAdminName] = useState("Admin");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState({});
-  const [stats, setStats] = useState({
-    trainers: 0,
-    courses: 0,
-    batches: 0,
-  });
+  const [stats, setStats] = useState({ trainers: 0, courses: 0, batches: 0 });
 
-  // ✅ Load admin name from localStorage
+  // ✅ Load admin name
   useEffect(() => {
     const storedAdmin = localStorage.getItem("adminName");
-    if (storedAdmin) {
-      setAdminName(storedAdmin);
-    } else {
-      setAdminName("Admin");
-    }
+    if (storedAdmin) setAdminName(storedAdmin);
   }, []);
 
-  // ✅ Fetch counts
-  const fetchStats = async () => {
+  // ✅ Fetch latest counts from backend
+  const fetchStats = useCallback(async () => {
     try {
       const [trainersRes, coursesRes, batchesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/trainers/"),
-        axios.get("http://localhost:8080/api/course/"),
-        axios.get("http://localhost:8080/api/batches/"),
-      ]);
+  axios.get("http://localhost:8080/api/trainers"),
+  axios.get("http://localhost:8080/api/courses"),
+  axios.get("http://localhost:8080/api/batches"),
+]);
+
 
       setStats({
-        trainers: trainersRes.data.length,
-        courses: coursesRes.data.length,
-        batches: batchesRes.data.length,
+        trainers: trainersRes.data?.length || 0,
+        courses: coursesRes.data?.length || 0,
+        batches: batchesRes.data?.length || 0,
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
+      setStats({ trainers: 0, courses: 0, batches: 0 }); // fallback to 0
     }
-  };
-
-  useEffect(() => {
-    fetchStats();
   }, []);
 
-  const incrementStat = (type) => {
-    setStats((prev) => ({ ...prev, [type]: prev[type] + 1 }));
+  // ✅ Fetch initial stats on mount
+  useEffect(() => {
+    fetchStats();
+  }, [fetchStats]);
+
+  // ✅ Increment / Decrement with backend sync
+  const updateStat = (type, action = "increment") => {
+    setStats((prev) => {
+      const newValue =
+        action === "increment"
+          ? prev[type] + 1
+          : Math.max(prev[type] - 1, 0);
+      return { ...prev, [type]: newValue };
+    });
+
+    // Fetch updated real-time data again (after local update)
+    setTimeout(fetchStats, 500); // small delay for backend sync
   };
 
-  // ✅ Logout clears all admin data
+  // ✅ Logout
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminName");
@@ -163,7 +168,7 @@ const AdminDashboard = () => {
         </button>
       </aside>
 
-      {/* Main Content */}
+      {/* Main */}
       <main className={`main ${sidebarOpen ? "ml-open" : "ml-closed"}`}>
         <div className="header">
           <h3>Dashboard</h3>
@@ -172,26 +177,27 @@ const AdminDashboard = () => {
 
         <div className="stats-chart">
           <div className="stats-cards">
-            <StatCard title="Total Trainers" count={stats.trainers} color="primary" bgColor="#e0f7fa" />
-            <StatCard title="Active Courses" count={stats.courses} color="success" bgColor="#e8f5e9" />
-            <StatCard title="Total Batches" count={stats.batches} color="danger" bgColor="#fff3e0" />
+            <StatCard title="Total Trainers" count={stats.trainers} color="primary" bgColor="#E8F8F5" />
+            <StatCard title="Active Courses" count={stats.courses} color="success" bgColor="#EAF3FC" />
+            <StatCard title="Total Batches" count={stats.batches} color="warning" bgColor="#FFF7E6" />
           </div>
 
           <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="total" fill="#8884d8" />
+                <Bar dataKey="total" fill="#2EBFAF" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
+        {/* ✅ Outlet with sync functions */}
         <div className="child-outlet">
-          <Outlet context={{ incrementStat, fetchStats }} />
+          <Outlet context={{ fetchStats, updateStat }} />
         </div>
       </main>
     </div>
@@ -199,5 +205,7 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
 
 

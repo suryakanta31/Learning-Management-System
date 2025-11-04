@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import lmsService from "../../services/lmsService";
 import "../../index.css";
 
 const ManageCourse = () => {
+  const { updateStat, fetchStats } = useOutletContext() ?? {};
   const [courses, setCourses] = useState([]);
   const [course, setCourse] = useState({ courseName: "", description: "" });
   const [editId, setEditId] = useState(null);
@@ -26,7 +28,7 @@ const ManageCourse = () => {
 
   const handleAddOrUpdate = async () => {
     if (!course.courseName.trim() || !course.description.trim()) {
-      alert("Please fill in all fields");
+      alert("Please fill all fields");
       return;
     }
 
@@ -36,14 +38,18 @@ const ManageCourse = () => {
         setCourses((prev) =>
           prev.map((c, i) => (i === editIndex ? { ...c, ...course } : c))
         );
-        setEditId(null);
-        setEditIndex(null);
+        fetchStats && fetchStats();
       } else {
         const res = await lmsService.addCourse(course);
-        if (res?.data) setCourses((prev) => [res.data, ...prev]);
+        if (res?.data) {
+          setCourses((prev) => [res.data, ...prev]);
+          updateStat && updateStat("courses", "increment");
+        }
       }
 
       setCourse({ courseName: "", description: "" });
+      setEditId(null);
+      setEditIndex(null);
     } catch (err) {
       console.error("Error saving course:", err);
     }
@@ -98,10 +104,7 @@ const ManageCourse = () => {
           <table className="table table-bordered text-center">
             <thead>
               <tr>
-                <th>S.No</th>
-                <th>Course Name</th>
-                <th>Description</th>
-                <th>Action</th>
+                <th>S.No</th><th>Course Name</th><th>Description</th><th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -111,15 +114,8 @@ const ManageCourse = () => {
                   <td>{c.courseName}</td>
                   <td>{c.description}</td>
                   <td>
-                    <button
-                      className="btn btn-sm btn-warning me-2"
-                      onClick={() => handleEdit(c, idx)}
-                    >
-                      Edit
-                    </button>
-                    <button className="btn btn-sm btn-danger" disabled>
-                      Delete
-                    </button>
+                    <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(c, idx)}>Edit</button>
+                    <button className="btn btn-sm btn-danger" disabled>Delete</button>
                   </td>
                 </tr>
               ))}
@@ -132,7 +128,3 @@ const ManageCourse = () => {
 };
 
 export default ManageCourse;
-
-
-
-

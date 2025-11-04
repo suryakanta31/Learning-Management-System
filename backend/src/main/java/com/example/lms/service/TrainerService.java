@@ -5,6 +5,7 @@ import com.example.lms.entity.Trainer;
 import com.example.lms.repository.TrainerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -13,9 +14,11 @@ public class TrainerService {
     @Autowired
     private TrainerRepository trainerRepository;
 
-    // ✅ Add trainer under an admin
     public Trainer addTrainer(Trainer trainer, Admin admin) {
-        trainer.setAdmin(admin); // assuming Trainer entity has Admin field
+        if (trainerRepository.existsByEmail(trainer.getEmail())) {
+            throw new RuntimeException("Email already exists: " + trainer.getEmail());
+        }
+        trainer.setAdmin(admin);
         return trainerRepository.save(trainer);
     }
 
@@ -25,10 +28,11 @@ public class TrainerService {
 
     public Trainer updateTrainer(Long id, Trainer updatedTrainer) {
         Trainer existing = trainerRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+                .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + id));
         existing.setName(updatedTrainer.getName());
         existing.setEmail(updatedTrainer.getEmail());
         existing.setPassword(updatedTrainer.getPassword());
+        existing.setSpecialization(updatedTrainer.getSpecialization());
         return trainerRepository.save(existing);
     }
 

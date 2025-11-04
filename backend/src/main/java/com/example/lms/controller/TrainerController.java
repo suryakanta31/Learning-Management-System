@@ -26,11 +26,12 @@ public class TrainerController {
     // ✅ Admin adds a trainer
     @PostMapping("/add/{adminId}")
     public Trainer addTrainer(@PathVariable Long adminId, @RequestBody Trainer trainer) {
-        Admin admin = adminRepository.findById(adminId).orElseThrow();
+        Admin admin = adminRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + adminId));
         return trainerService.addTrainer(trainer, admin);
     }
 
-    // ✅ Trainer signup (optional, if trainers self-register)
+    // ✅ Trainer signup (optional, if self-registration is allowed)
     @PostMapping("/signup")
     public Trainer signup(@RequestBody Trainer trainer) {
         return trainerRepository.save(trainer);
@@ -40,15 +41,16 @@ public class TrainerController {
     @PostMapping("/login")
     public Trainer login(@RequestBody Trainer loginRequest) {
         Trainer trainer = trainerRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+                .orElseThrow(() -> new RuntimeException("Trainer not found with email: " + loginRequest.getEmail()));
+
         if (!trainer.getPassword().equals(loginRequest.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
         return trainer;
     }
 
-    // ✅ Fetch all trainers
-    @GetMapping("/")
+    // ✅ Fetch all trainers (⚠️ removed trailing slash for consistency)
+    @GetMapping
     public List<Trainer> getAllTrainers() {
         return trainerService.getAllTrainers();
     }
@@ -58,4 +60,11 @@ public class TrainerController {
     public Trainer updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
         return trainerService.updateTrainer(id, trainer);
     }
+
+    // ✅ Delete trainer
+    @DeleteMapping("/{id}")
+    public void deleteTrainer(@PathVariable Long id) {
+        trainerService.deleteTrainer(id);
+    }
 }
+

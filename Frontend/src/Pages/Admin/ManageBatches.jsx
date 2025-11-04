@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useOutletContext } from "react-router-dom";
 import lmsService from "../../services/lmsService";
 import "../../index.css";
 
 const ManageBatches = () => {
+  const { updateStat, fetchStats } = useOutletContext() ?? {};
   const [batches, setBatches] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [newBatch, setNewBatch] = useState({
     batchName: "",
     course: "",
@@ -17,10 +20,14 @@ const ManageBatches = () => {
   useEffect(() => {
     (async () => {
       try {
-        const res = await lmsService.getAllBatches();
-        setBatches(res.data || []);
+        const [batchRes, courseRes] = await Promise.all([
+          lmsService.getAllBatches(),
+          lmsService.getAllCourses(),
+        ]);
+        setBatches(batchRes.data || []);
+        setCourses(courseRes.data || []);
       } catch (err) {
-        console.error("Failed to load batches:", err);
+        console.error("Failed to load data:", err);
       }
     })();
   }, []);
@@ -36,17 +43,27 @@ const ManageBatches = () => {
       return;
     }
 
+    const payload = {
+      batchName: newBatch.batchName,
+      startDate: newBatch.startDate,
+      endDate: newBatch.endDate,
+      trainer: newBatch.trainer,
+      course: { id: newBatch.course },
+    };
+
     try {
       if (editId) {
-        await lmsService.updateBatch(editId, newBatch);
+        await lmsService.updateBatch(editId, payload);
         setBatches((prev) =>
-          prev.map((b, i) => (i === editIndex ? { ...b, ...newBatch } : b))
+          prev.map((b, i) => (i === editIndex ? { ...b, ...payload } : b))
         );
-        setEditId(null);
-        setEditIndex(null);
+        fetchStats && fetchStats();
       } else {
-        const res = await lmsService.addBatch(newBatch);
-        if (res?.data) setBatches((prev) => [res.data, ...prev]);
+        const res = await lmsService.addBatch(payload);
+        if (res?.data) {
+          setBatches((prev) => [res.data, ...prev]);
+          updateStat && updateStat("batches", "increment");
+        }
       }
 
       setNewBatch({
@@ -56,14 +73,21 @@ const ManageBatches = () => {
         startDate: "",
         endDate: "",
       });
+      setEditId(null);
+      setEditIndex(null);
     } catch (err) {
       console.error("Error saving batch:", err);
-      alert("Failed to save batch — check console.");
     }
   };
 
   const handleEdit = (batch, index) => {
-    setNewBatch(batch);
+    setNewBatch({
+      batchName: batch.batchName,
+      course: batch.course?.id || "",
+      trainer: batch.trainer || "",
+      startDate: batch.startDate || "",
+      endDate: batch.endDate || "",
+    });
     setEditId(batch.id ?? null);
     setEditIndex(index);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -74,39 +98,16 @@ const ManageBatches = () => {
       <h2 className="batch-title">Manage Batches</h2>
 
       <div className="batch-form">
-        <input
-          type="text"
-          name="batchName"
-          value={newBatch.batchName}
-          onChange={handleChange}
-          placeholder="Batch Name *"
-        />
-        <input
-          type="text"
-          name="course"
-          value={newBatch.course}
-          onChange={handleChange}
-          placeholder="Course Name *"
-        />
-        <input
-          type="text"
-          name="trainer"
-          value={newBatch.trainer}
-          onChange={handleChange}
-          placeholder="Trainer Name"
-        />
-        <input
-          type="date"
-          name="startDate"
-          value={newBatch.startDate}
-          onChange={handleChange}
-        />
-        <input
-          type="date"
-          name="endDate"
-          value={newBatch.endDate}
-          onChange={handleChange}
-        />
+        <input type="text" name="batchName" value={newBatch.batchName} onChange={handleChange} placeholder="Batch Name *" />
+        <select name="course" value={newBatch.course} onChange={handleChange}>
+          <option value="">Select Course *</option>
+          {courses.map((c) => (
+            <option key={c.id} value={c.id}>{c.courseName}</option>
+          ))}
+        </select>
+        <input type="text" name="trainer" value={newBatch.trainer} onChange={handleChange} placeholder="Trainer Name" />
+        <input type="date" name="startDate" value={newBatch.startDate} onChange={handleChange} />
+        <input type="date" name="endDate" value={newBatch.endDate} onChange={handleChange} />
 
         <button className="add-btn" onClick={handleAddOrUpdate}>
           {editId ? "Update" : "Add"}
@@ -148,7 +149,7 @@ const ManageBatches = () => {
                 <tr key={b.id ?? idx}>
                   <td>{idx + 1}</td>
                   <td>{b.batchName}</td>
-                  <td>{b.course}</td>
+                  <td>{b.course?.courseName || "N/A"}</td>
                   <td>{b.trainer || "TBD"}</td>
                   <td>{b.startDate}</td>
                   <td>{b.endDate}</td>
@@ -174,5 +175,4 @@ const ManageBatches = () => {
 };
 
 export default ManageBatches;
-
 

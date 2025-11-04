@@ -7,7 +7,8 @@ export const trainerLogin = (data) => api.post("/api/trainers/login", data);
 export const trainerSignup = (data) => api.post("/api/trainers/signup", data);
 
 export const addTrainer = (adminId, data) => api.post(`/api/trainers/add/${adminId}`, data);
-export const getAllTrainers = () => api.get("/api/trainers/");
+export const getAllTrainers = () => api.get("/api/trainers");
+
 export const updateTrainer = (id, data) => api.put(`/api/trainers/update/${id}`, data);
 export const deleteTrainer = (id) => api.delete(`/api/trainers/${id}`);
 export const getBatchesForTrainer = (id) => api.get(`/api/trainers/${id}/batches`);
