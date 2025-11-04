@@ -17,6 +17,8 @@ const AddTrainer = () => {
   });
   const [editRowId, setEditRowId] = useState(null);
   const [editedTrainer, setEditedTrainer] = useState({});
+  const [showPassword, setShowPassword] = useState(false); // 👁️ Add this for visibility toggle
+  const [showEditPassword, setShowEditPassword] = useState(false); // 👁️ For edit mode
 
   useEffect(() => {
     (async () => {
@@ -66,6 +68,7 @@ const AddTrainer = () => {
   const handleEditRow = (trainer) => {
     setEditRowId(trainer.id);
     setEditedTrainer({ ...trainer });
+    setShowEditPassword(false);
   };
 
   const handleEditChange = (e) => {
@@ -100,7 +103,25 @@ const AddTrainer = () => {
       <div className="trainer-form">
         <input type="text" name="name" value={newTrainer.name} onChange={handleInputChange} placeholder="Full Name *" />
         <input type="email" name="email" value={newTrainer.email} onChange={handleInputChange} placeholder="Email *" />
-        <input type="password" name="password" value={newTrainer.password} onChange={handleInputChange} placeholder="Password *" />
+
+        {/* 👁️ Password Input with Toggle Button */}
+        <div className="password-container">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            value={newTrainer.password}
+            onChange={handleInputChange}
+            placeholder="Password *"
+          />
+          <button
+            type="button"
+            className="eye-btn"
+            onClick={() => setShowPassword((prev) => !prev)}
+          >
+            {showPassword ? "🙈" : "👁️"}
+          </button>
+        </div>
+
         <input type="text" name="phone" value={newTrainer.phone} onChange={handleInputChange} placeholder="Phone" />
         <input type="text" name="skill" value={newTrainer.skill} onChange={handleInputChange} placeholder="Skill" />
         <input type="number" name="experience" value={newTrainer.experience} onChange={handleInputChange} placeholder="Experience (yrs)" />
@@ -127,16 +148,34 @@ const AddTrainer = () => {
                 editRowId === trainer.id ? (
                   <tr key={trainer.id}>
                     <td>{idx + 1}</td>
-                    {["name", "email", "password", "phone", "skill", "experience", "qualification"].map((field) => (
+                    {["name", "email", "phone", "skill", "experience", "qualification"].map((field) => (
                       <td key={field}>
                         <input
-                          type={field === "password" ? "password" : "text"}
+                          type="text"
                           name={field}
                           value={editedTrainer[field] || ""}
                           onChange={handleEditChange}
                         />
                       </td>
                     ))}
+                    <td>
+                      {/* 👁️ Editable Password Field */}
+                      <div className="password-container">
+                        <input
+                          type={showEditPassword ? "text" : "password"}
+                          name="password"
+                          value={editedTrainer.password || ""}
+                          onChange={handleEditChange}
+                        />
+                        <button
+                          type="button"
+                          className="eye-btn"
+                          onClick={() => setShowEditPassword((prev) => !prev)}
+                        >
+                          {showEditPassword ? "🙈" : "👁️"}
+                        </button>
+                      </div>
+                    </td>
                     <td>
                       <button className="btn btn-sm btn-success me-2" onClick={handleSaveRow}>Save</button>
                       <button className="btn btn-sm btn-secondary" onClick={handleCancelEdit}>Cancel</button>
@@ -163,6 +202,29 @@ const AddTrainer = () => {
           </table>
         )}
       </div>
+
+      {/* Basic inline style for password eye icon */}
+      <style>
+        {`
+        .password-container {
+          display: flex;
+          align-items: center;
+          position: relative;
+        }
+        .password-container input {
+          flex: 1;
+          padding-right: 40px;
+        }
+        .eye-btn {
+          position: absolute;
+          right: 5px;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 18px;
+        }
+        `}
+      </style>
     </div>
   );
 };

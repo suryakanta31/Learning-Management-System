@@ -7,8 +7,8 @@ const ManageCourse = () => {
   const { updateStat, fetchStats } = useOutletContext() ?? {};
   const [courses, setCourses] = useState([]);
   const [course, setCourse] = useState({ courseName: "", description: "" });
-  const [editId, setEditId] = useState(null);
-  const [editIndex, setEditIndex] = useState(null);
+  const [editRowId, setEditRowId] = useState(null);
+  const [editedCourse, setEditedCourse] = useState({});
 
   useEffect(() => {
     (async () => {
@@ -26,77 +26,68 @@ const ManageCourse = () => {
     setCourse({ ...course, [name]: value });
   };
 
-  const handleAddOrUpdate = async () => {
+  const handleAddCourse = async () => {
     if (!course.courseName.trim() || !course.description.trim()) {
       alert("Please fill all fields");
       return;
     }
 
     try {
-      if (editId) {
-        await lmsService.updateCourse(editId, course);
-        setCourses((prev) =>
-          prev.map((c, i) => (i === editIndex ? { ...c, ...course } : c))
-        );
-        fetchStats && fetchStats();
-      } else {
-        const res = await lmsService.addCourse(course);
-        if (res?.data) {
-          setCourses((prev) => [res.data, ...prev]);
-          updateStat && updateStat("courses", "increment");
-        }
+      const res = await lmsService.addCourse(course);
+      if (res?.data) {
+        setCourses((prev) => [res.data, ...prev]);
+        updateStat && updateStat("courses", "increment");
       }
 
       setCourse({ courseName: "", description: "" });
-      setEditId(null);
-      setEditIndex(null);
     } catch (err) {
       console.error("Error saving course:", err);
     }
   };
 
-  const handleEdit = (c, idx) => {
-    setCourse(c);
-    setEditId(c.id ?? null);
-    setEditIndex(idx);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  const handleEditRow = (c) => {
+    setEditRowId(c.id);
+    setEditedCourse({ ...c });
+  };
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditedCourse({ ...editedCourse, [name]: value });
+  };
+
+  const handleSaveRow = async () => {
+    try {
+      await lmsService.updateCourse(editRowId, editedCourse);
+      setCourses((prev) =>
+        prev.map((c) => (c.id === editRowId ? editedCourse : c))
+      );
+      setEditRowId(null);
+      setEditedCourse({});
+      fetchStats && fetchStats();
+    } catch (err) {
+      console.error("Error updating course:", err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditRowId(null);
+    setEditedCourse({});
   };
 
   return (
     <div className="course-container">
       <h2 className="course-title">Manage Courses</h2>
 
+      {/* Add Form */}
       <div className="course-form">
-        <input
-          type="text"
-          name="courseName"
-          value={course.courseName}
-          onChange={handleChange}
-          placeholder="Course Title *"
-        />
-        <input
-          type="text"
-          name="description"
-          value={course.description}
-          onChange={handleChange}
-          placeholder="Course Description *"
-        />
+        <input type="text" name="courseName" value={course.courseName} onChange={handleChange} placeholder="Course Title *" />
+        <input type="text" name="description" value={course.description} onChange={handleChange} placeholder="Course Description *" />
 
-        <button className="add-btn" onClick={handleAddOrUpdate}>
-          {editId ? "Update" : "Add"}
-        </button>
-        <button
-          className="clear-btn"
-          onClick={() => {
-            setCourse({ courseName: "", description: "" });
-            setEditId(null);
-            setEditIndex(null);
-          }}
-        >
-          Clear
-        </button>
+        <button className="add-btn" onClick={handleAddCourse}>Add</button>
+        <button className="clear-btn" onClick={() => setCourse({ courseName: "", description: "" })}>Clear</button>
       </div>
 
+      {/* Table */}
       <div className="course-list">
         {courses.length === 0 ? (
           <p className="text-center text-muted">No courses added yet</p>
@@ -108,17 +99,29 @@ const ManageCourse = () => {
               </tr>
             </thead>
             <tbody>
-              {courses.map((c, idx) => (
-                <tr key={c.id ?? idx}>
-                  <td>{idx + 1}</td>
-                  <td>{c.courseName}</td>
-                  <td>{c.description}</td>
-                  <td>
-                    <button className="btn btn-sm btn-warning me-2" onClick={() => handleEdit(c, idx)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" disabled>Delete</button>
-                  </td>
-                </tr>
-              ))}
+              {courses.map((c, idx) =>
+                editRowId === c.id ? (
+                  <tr key={c.id}>
+                    <td>{idx + 1}</td>
+                    <td><input type="text" name="courseName" value={editedCourse.courseName || ""} onChange={handleEditChange} /></td>
+                    <td><input type="text" name="description" value={editedCourse.description || ""} onChange={handleEditChange} /></td>
+                    <td>
+                      <button className="btn btn-sm btn-success me-2" onClick={handleSaveRow}>Save</button>
+                      <button className="btn btn-sm btn-secondary" onClick={handleCancelEdit}>Cancel</button>
+                    </td>
+                  </tr>
+                ) : (
+                  <tr key={c.id}>
+                    <td>{idx + 1}</td>
+                    <td>{c.courseName}</td>
+                    <td>{c.description}</td>
+                    <td>
+                      <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditRow(c)}>Edit</button>
+                      <button className="btn btn-sm btn-danger" disabled>Delete</button>
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
         )}

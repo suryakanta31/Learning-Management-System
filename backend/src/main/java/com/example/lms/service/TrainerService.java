@@ -29,11 +29,15 @@ public class TrainerService {
     public Trainer updateTrainer(Long id, Trainer updatedTrainer) {
         Trainer existing = trainerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + id));
-        existing.setName(updatedTrainer.getName());
-        existing.setEmail(updatedTrainer.getEmail());
-        existing.setPassword(updatedTrainer.getPassword());
-        existing.setSpecialization(updatedTrainer.getSpecialization());
-        return trainerRepository.save(existing);
+         existing.setName(updatedTrainer.getName());
+    existing.setEmail(updatedTrainer.getEmail());
+    existing.setPassword(updatedTrainer.getPassword());
+    existing.setPhone(updatedTrainer.getPhone());
+    existing.setSkill(updatedTrainer.getSkill());
+    existing.setExperience(updatedTrainer.getExperience());
+    existing.setQualification(updatedTrainer.getQualification());
+
+    return trainerRepository.save(existing);
     }
 
     public void deleteTrainer(Long id) {
