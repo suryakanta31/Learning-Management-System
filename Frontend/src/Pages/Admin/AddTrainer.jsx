@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Eye, EyeOff, Plus, Edit, Trash2, Save, X } from "lucide-react";
 import { useOutletContext } from "react-router-dom";
 import lmsService from "../../services/lmsService";
 import "../../index.css";
@@ -6,6 +7,10 @@ import "../../index.css";
 const AddTrainer = () => {
   const { updateStat, fetchStats } = useOutletContext() ?? {};
   const [trainers, setTrainers] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [editRowId, setEditRowId] = useState(null);
+  const [showEditPassword, setShowEditPassword] = useState(false);
   const [newTrainer, setNewTrainer] = useState({
     name: "",
     email: "",
@@ -15,10 +20,7 @@ const AddTrainer = () => {
     experience: "",
     qualification: "",
   });
-  const [editRowId, setEditRowId] = useState(null);
   const [editedTrainer, setEditedTrainer] = useState({});
-  const [showPassword, setShowPassword] = useState(false); // 👁️ Add this for visibility toggle
-  const [showEditPassword, setShowEditPassword] = useState(false); // 👁️ For edit mode
 
   useEffect(() => {
     (async () => {
@@ -31,24 +33,22 @@ const AddTrainer = () => {
     })();
   }, []);
 
-  const handleInputChange = (e) => {
+  // === HANDLERS ===
+  const handleInput = (e) => {
     const { name, value } = e.target;
     setNewTrainer({ ...newTrainer, [name]: value });
   };
 
   const handleAddTrainer = async () => {
     if (!newTrainer.name || !newTrainer.email || !newTrainer.password) {
-      alert("Please fill required fields (Name, Email, Password)");
+      alert("Please fill Name, Email & Password");
       return;
     }
-
     try {
       const adminId = localStorage.getItem("adminId");
       const res = await lmsService.addTrainer(adminId, newTrainer);
-      if (res?.data) {
-        setTrainers((prev) => [res.data, ...prev]);
-        updateStat && updateStat("trainers", "increment");
-      }
+      setTrainers((prev) => [res.data, ...prev]);
+      updateStat && updateStat("trainers", "increment");
 
       setNewTrainer({
         name: "",
@@ -59,16 +59,15 @@ const AddTrainer = () => {
         experience: "",
         qualification: "",
       });
+      setShowForm(false);
     } catch (err) {
       console.error("Error adding trainer:", err);
-      alert("Failed to add trainer");
     }
   };
 
   const handleEditRow = (trainer) => {
     setEditRowId(trainer.id);
     setEditedTrainer({ ...trainer });
-    setShowEditPassword(false);
   };
 
   const handleEditChange = (e) => {
@@ -95,105 +94,230 @@ const AddTrainer = () => {
     setEditedTrainer({});
   };
 
+  // === UI ===
   return (
-    <div className="trainer-container">
-      <h2 className="trainer-title">Trainer Management</h2>
-
-      {/* Add Form */}
-      <div className="trainer-form">
-        <input type="text" name="name" value={newTrainer.name} onChange={handleInputChange} placeholder="Full Name *" />
-        <input type="email" name="email" value={newTrainer.email} onChange={handleInputChange} placeholder="Email *" />
-
-        {/* 👁️ Password Input with Toggle Button */}
-        <div className="password-container">
-          <input
-            type={showPassword ? "text" : "password"}
-            name="password"
-            value={newTrainer.password}
-            onChange={handleInputChange}
-            placeholder="Password *"
-          />
+    <div className="page-container trainer-page">
+      {/* ===== Header Section ===== */}
+      <div className="page-header">
+        <h2 className="page-title">Trainer Management</h2>
+        <div className="add-toggle">
           <button
-            type="button"
-            className="eye-btn"
-            onClick={() => setShowPassword((prev) => !prev)}
+            onClick={() => setShowForm(!showForm)}
+            className="toggle-form-btn"
           >
-            {showPassword ? "🙈" : "👁️"}
+            <Plus size={18} />
+            {showForm ? "Hide Form" : "Add Trainer"}
           </button>
         </div>
-
-        <input type="text" name="phone" value={newTrainer.phone} onChange={handleInputChange} placeholder="Phone" />
-        <input type="text" name="skill" value={newTrainer.skill} onChange={handleInputChange} placeholder="Skill" />
-        <input type="number" name="experience" value={newTrainer.experience} onChange={handleInputChange} placeholder="Experience (yrs)" />
-        <input type="text" name="qualification" value={newTrainer.qualification} onChange={handleInputChange} placeholder="Qualification" />
-
-        <button className="add-btn" onClick={handleAddTrainer}>Add</button>
       </div>
 
-      {/* Trainer Table */}
-      <div className="trainer-table mt-4">
+      {/* ===== Add Form ===== */}
+      {showForm && (
+        <div className="add-form">
+          <input
+            name="name"
+            placeholder="Full Name *"
+            value={newTrainer.name}
+            onChange={handleInput}
+          />
+          <input
+            name="email"
+            placeholder="Email *"
+            value={newTrainer.email}
+            onChange={handleInput}
+          />
+
+          <div style={{ position: "relative" }}>
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password *"
+              value={newTrainer.password}
+              onChange={handleInput}
+              style={{ paddingRight: "30px" }}
+            />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "8px",
+                top: "8px",
+                cursor: "pointer",
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
+          </div>
+
+          <input
+            name="phone"
+            placeholder="Phone"
+            value={newTrainer.phone}
+            onChange={handleInput}
+          />
+          <input
+            name="skill"
+            placeholder="Skill"
+            value={newTrainer.skill}
+            onChange={handleInput}
+          />
+          <input
+            name="experience"
+            placeholder="Experience (yrs)"
+            value={newTrainer.experience}
+            onChange={handleInput}
+          />
+          <input
+            name="qualification"
+            placeholder="Qualification"
+            value={newTrainer.qualification}
+            onChange={handleInput}
+          />
+
+          <button className="btn btn-primary" onClick={handleAddTrainer}>
+            <Save size={16} /> Add
+          </button>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setShowForm(false)}
+          >
+            <X size={16} /> Cancel
+          </button>
+        </div>
+      )}
+
+      {/* ===== Trainer Table ===== */}
+      <div className="table-wrapper">
         {trainers.length === 0 ? (
-          <p className="text-center text-muted fs-5">No trainers added yet</p>
+          <p className="empty-msg">No trainers added yet</p>
         ) : (
-          <table className="styled-table">
+          <table className="data-table">
             <thead>
               <tr>
-                <th>S.No</th><th>Name</th><th>Email</th><th>Password</th>
-                <th>Phone</th><th>Skill</th><th>Experience</th>
-                <th>Qualification</th><th>Actions</th>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Password</th>
+                <th>Phone</th>
+                <th>Skill</th>
+                <th>Experience</th>
+                <th>Qualification</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
-              {trainers.map((trainer, idx) =>
-                editRowId === trainer.id ? (
-                  <tr key={trainer.id}>
+              {trainers.map((t, idx) =>
+                editRowId === t.id ? (
+                  <tr key={t.id}>
                     <td>{idx + 1}</td>
-                    {["name", "email", "phone", "skill", "experience", "qualification"].map((field) => (
-                      <td key={field}>
-                        <input
-                          type="text"
-                          name={field}
-                          value={editedTrainer[field] || ""}
-                          onChange={handleEditChange}
-                        />
-                      </td>
-                    ))}
                     <td>
-                      {/* 👁️ Editable Password Field */}
-                      <div className="password-container">
+                      <input
+                        type="text"
+                        name="name"
+                        value={editedTrainer.name || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="email"
+                        name="email"
+                        value={editedTrainer.email || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <div style={{ position: "relative" }}>
                         <input
                           type={showEditPassword ? "text" : "password"}
                           name="password"
                           value={editedTrainer.password || ""}
                           onChange={handleEditChange}
+                          style={{ paddingRight: "30px" }}
                         />
-                        <button
-                          type="button"
-                          className="eye-btn"
-                          onClick={() => setShowEditPassword((prev) => !prev)}
+                        <span
+                          onClick={() =>
+                            setShowEditPassword(!showEditPassword)
+                          }
+                          style={{
+                            position: "absolute",
+                            right: "8px",
+                            top: "8px",
+                            cursor: "pointer",
+                          }}
                         >
-                          {showEditPassword ? "🙈" : "👁️"}
-                        </button>
+                          {showEditPassword ? (
+                            <EyeOff size={16} />
+                          ) : (
+                            <Eye size={16} />
+                          )}
+                        </span>
                       </div>
                     </td>
                     <td>
-                      <button className="btn btn-sm btn-success me-2" onClick={handleSaveRow}>Save</button>
-                      <button className="btn btn-sm btn-secondary" onClick={handleCancelEdit}>Cancel</button>
+                      <input
+                        type="text"
+                        name="phone"
+                        value={editedTrainer.phone || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="skill"
+                        value={editedTrainer.skill || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="experience"
+                        value={editedTrainer.experience || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="qualification"
+                        value={editedTrainer.qualification || ""}
+                        onChange={handleEditChange}
+                      />
+                    </td>
+                    <td>
+                      <button className="btn btn-success" onClick={handleSaveRow}>
+                        <Save size={14} /> Save
+                      </button>
+                      <button
+                        className="btn btn-secondary"
+                        onClick={handleCancelEdit}
+                      >
+                        <X size={14} /> Cancel
+                      </button>
                     </td>
                   </tr>
                 ) : (
-                  <tr key={trainer.id}>
+                  <tr key={t.id}>
                     <td>{idx + 1}</td>
-                    <td>{trainer.name}</td>
-                    <td>{trainer.email}</td>
-                    <td>{trainer.password ? "••••••" : "-"}</td>
-                    <td>{trainer.phone || "-"}</td>
-                    <td>{trainer.skill || "-"}</td>
-                    <td>{trainer.experience || "-"}</td>
-                    <td>{trainer.qualification || "-"}</td>
+                    <td>{t.name}</td>
+                    <td>{t.email}</td>
+                    <td>••••••</td>
+                    <td>{t.phone || "-"}</td>
+                    <td>{t.skill || "-"}</td>
+                    <td>{t.experience || "-"}</td>
+                    <td>{t.qualification || "-"}</td>
                     <td>
-                      <button className="btn btn-sm btn-warning me-2" onClick={() => handleEditRow(trainer)}>Edit</button>
-                      <button className="btn btn-sm btn-danger" disabled>Delete</button>
+                      <button
+                        className="btn btn-warning"
+                        onClick={() => handleEditRow(t)}
+                      >
+                        <Edit size={14} /> Edit
+                      </button>
+                      <button className="btn btn-danger" disabled>
+                        <Trash2 size={14} /> Delete
+                      </button>
                     </td>
                   </tr>
                 )
@@ -202,34 +326,14 @@ const AddTrainer = () => {
           </table>
         )}
       </div>
-
-      {/* Basic inline style for password eye icon */}
-      <style>
-        {`
-        .password-container {
-          display: flex;
-          align-items: center;
-          position: relative;
-        }
-        .password-container input {
-          flex: 1;
-          padding-right: 40px;
-        }
-        .eye-btn {
-          position: absolute;
-          right: 5px;
-          background: none;
-          border: none;
-          cursor: pointer;
-          font-size: 18px;
-        }
-        `}
-      </style>
     </div>
   );
 };
 
 export default AddTrainer;
+
+
+
 
 
 

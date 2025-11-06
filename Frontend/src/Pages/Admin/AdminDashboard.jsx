@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { BarChart3, Users, BookOpen, Layers, FileText, LogOut, ChevronDown, ChevronUp, LayoutDashboard } from "lucide-react";
 import axios from "axios";
 import "../../index.css";
 
@@ -26,22 +27,18 @@ const AdminDashboard = () => {
   const [dropdownOpen, setDropdownOpen] = useState({});
   const [stats, setStats] = useState({ trainers: 0, courses: 0, batches: 0 });
 
-  // ✅ Load admin name
   useEffect(() => {
     const storedAdmin = localStorage.getItem("adminName");
     if (storedAdmin) setAdminName(storedAdmin);
   }, []);
 
-  // ✅ Fetch latest counts from backend
   const fetchStats = useCallback(async () => {
     try {
       const [trainersRes, coursesRes, batchesRes] = await Promise.all([
-  axios.get("http://localhost:8080/api/trainers"),
-  axios.get("http://localhost:8080/api/courses"),
-  axios.get("http://localhost:8080/api/batches"),
-]);
-
-
+        axios.get("http://localhost:8080/api/trainers"),
+        axios.get("http://localhost:8080/api/courses"),
+        axios.get("http://localhost:8080/api/batches"),
+      ]);
       setStats({
         trainers: trainersRes.data?.length || 0,
         courses: coursesRes.data?.length || 0,
@@ -49,16 +46,14 @@ const AdminDashboard = () => {
       });
     } catch (err) {
       console.error("Error fetching stats:", err);
-      setStats({ trainers: 0, courses: 0, batches: 0 }); // fallback to 0
+      setStats({ trainers: 0, courses: 0, batches: 0 });
     }
   }, []);
 
-  // ✅ Fetch initial stats on mount
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
 
-  // ✅ Increment / Decrement with backend sync
   const updateStat = (type, action = "increment") => {
     setStats((prev) => {
       const newValue =
@@ -67,12 +62,9 @@ const AdminDashboard = () => {
           : Math.max(prev[type] - 1, 0);
       return { ...prev, [type]: newValue };
     });
-
-    // Fetch updated real-time data again (after local update)
-    setTimeout(fetchStats, 500); // small delay for backend sync
+    setTimeout(fetchStats, 500);
   };
 
-  // ✅ Logout
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminName");
@@ -84,28 +76,28 @@ const AdminDashboard = () => {
   };
 
   const menuItems = [
-    { label: "Dashboard", icon: "📊", path: "/admin" },
+    { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
     {
       label: "Trainers",
-      icon: "🧑‍🏫",
+      icon: <Users size={18} />,
       key: "trainers",
-      dropdown: [{ label: "Add & Manage Trainers", path: "/admin/addtrainer" }],
+      dropdown: [{ label: "Manage Trainers", path: "/admin/addtrainer" }],
     },
     {
       label: "Courses",
-      icon: "📚",
+      icon: <BookOpen size={18} />,
       key: "courses",
-      dropdown: [{ label: "Add & Manage Courses", path: "/admin/managecourse" }],
+      dropdown: [{ label: "Manage Courses", path: "/admin/managecourse" }],
     },
     {
       label: "Batches",
-      icon: "🗓️",
+      icon: <Layers size={18} />,
       key: "batches",
-      dropdown: [{ label: "Add & Manage Batches", path: "/admin/managebatches" }],
+      dropdown: [{ label: "Manage Batches", path: "/admin/managebatches" }],
     },
     {
       label: "Reports",
-      icon: "📈",
+      icon: <FileText size={18} />,
       key: "reports",
       dropdown: [{ label: "View Reports", path: "/admin/reportsanalytics" }],
     },
@@ -125,7 +117,12 @@ const AdminDashboard = () => {
           {sidebarOpen ? "◀" : "▶"}
         </button>
 
-        {sidebarOpen && <div className="sidebar-logo">KIT Admin</div>}
+        {sidebarOpen && (
+          <div className="sidebar-logo">
+            <BarChart3 size={32} color="#2f3b52" />
+            <span>KIT Admin</span>
+          </div>
+        )}
 
         <ul className="menu">
           {menuItems.map((item, idx) => (
@@ -137,7 +134,7 @@ const AdminDashboard = () => {
                     {sidebarOpen && <span>{item.label}</span>}
                     {sidebarOpen && (
                       <span className="caret">
-                        {dropdownOpen[item.key] ? "▲" : "▼"}
+                        {dropdownOpen[item.key] ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                       </span>
                     )}
                   </div>
@@ -164,15 +161,24 @@ const AdminDashboard = () => {
         </ul>
 
         <button className="logout-btn" onClick={handleLogout}>
-          {sidebarOpen ? "Logout" : "⎋"}
+          <LogOut size={16} style={{ marginRight: sidebarOpen ? 6 : 0 }} />
+          {sidebarOpen && "Logout"}
         </button>
       </aside>
 
-      {/* Main */}
+      {/* Main Section */}
       <main className={`main ${sidebarOpen ? "ml-open" : "ml-closed"}`}>
         <div className="header">
-          <h3>Dashboard</h3>
-          <span>{adminName}</span>
+          <div className="header-left">
+            <BarChart3 size={24} color="#2f3b52" />
+            <h3>Dashboard</h3>
+          </div>
+          <div className="header-right">
+            <div className="admin-logo">
+              {adminName.charAt(0).toUpperCase()}
+            </div>
+            <span>{adminName}</span>
+          </div>
         </div>
 
         <div className="stats-chart">
@@ -183,8 +189,8 @@ const AdminDashboard = () => {
           </div>
 
           <div className="chart-container">
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={chartData}>
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart data={chartData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -195,7 +201,6 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {/* ✅ Outlet with sync functions */}
         <div className="child-outlet">
           <Outlet context={{ fetchStats, updateStat }} />
         </div>
@@ -205,7 +210,4 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
-
-
 

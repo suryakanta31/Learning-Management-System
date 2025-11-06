@@ -35,6 +35,12 @@ export const getAllBatches = () => api.get("/api/batches");
 export const updateBatch = (id, data) => api.put(`/api/batches/${id}`, data);
 export const deleteBatch = (id) => api.delete(`/api/batches/${id}`);
 
+//Reports and Analytics
+export const getCoursePerformance = () => api.get("/reports/course-performance");
+export const getTrainerWorkload = () => api.get("/reports/trainer-workload");
+export const getBatchSummary = () => api.get("/reports/batch-summary");
+
+
 // ====================
 // ✅ Default export (optional grouped object)
 // ====================
@@ -63,4 +69,9 @@ export default {
   getAllBatches,
   updateBatch,
   deleteBatch,
+
+  // Reports
+  getCoursePerformance,
+  getTrainerWorkload,
+  getBatchSummary,
 };

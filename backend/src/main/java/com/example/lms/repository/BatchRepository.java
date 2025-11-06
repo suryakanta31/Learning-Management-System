@@ -9,9 +9,12 @@ import java.util.List;
 @Repository
 public interface BatchRepository extends JpaRepository<Batch, Long> {
 
-    // ✅ Find all batches for a specific course
+    // Correct method for course
     List<Batch> findByCourse_Id(Long courseId);
 
-    // ✅ Optional: Find by batch name
+    // Add method for trainer
+    List<Batch> findByTrainer_Id(Long trainerId);
+
+    // Optional: Find by batch name
     Batch findByBatchName(String batchName);
 }
