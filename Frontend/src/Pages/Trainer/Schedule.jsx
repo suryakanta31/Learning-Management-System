@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../../index.css";
-import TrainerService from "../../services/trainerService";
+import lmsService from "../../services/lmsService";
 
 const Schedule = () => {
   const trainerId = parseInt(localStorage.getItem("trainerId"), 10);

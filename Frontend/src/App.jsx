@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from "react";
 import {
   createBrowserRouter,
@@ -40,21 +41,18 @@ import TrainerFeedback from "./Pages/Student/TrainerFeedback";
 import Contact from "./Pages/Contact";
 import Rootlayout from "./Layout/Rootlayout";
 
-
-// ✅ Add this function (no authService needed)
+// ✅ Role-based authentication (no JWT, checks localStorage IDs)
 const requireAuth = (role) => {
-  const adminToken = localStorage.getItem("adminToken");
-  const trainerToken = localStorage.getItem("trainerToken");
-  const studentToken = localStorage.getItem("studentToken");
+  const adminId = localStorage.getItem("adminId");
+  const trainerId = localStorage.getItem("trainerId");
+  const studentId = localStorage.getItem("studentId");
 
-  // check based on role
-  if (role === "admin" && !adminToken) throw redirect("/adminlogin");
-  if (role === "trainer" && !trainerToken) throw redirect("/trainerlogin");
-  if (role === "student" && !studentToken) throw redirect("/studentlogin");
+  if (role === "admin" && !adminId) throw redirect("/adminlogin");
+  if (role === "trainer" && !trainerId) throw redirect("/trainerlogin");
+  if (role === "student" && !studentId) throw redirect("/studentlogin");
 
   return null;
 };
-
 
 const App = () => {
   const router = createBrowserRouter(
@@ -74,6 +72,7 @@ const App = () => {
           element={<AdminDashboard />}
           loader={() => requireAuth("admin")}
         >
+          <Route index element={<AddTrainer />} />
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
           <Route path="managecourse" element={<ManageCourse />} />
@@ -87,6 +86,7 @@ const App = () => {
           element={<TrainerDashboard />}
           loader={() => requireAuth("trainer")}
         >
+          <Route index element={<MyCourses />} />
           <Route path="mycourses" element={<MyCourses />} />
           <Route path="mybatches" element={<MyBatches />} />
           <Route path="attendance" element={<Attendance />} />
@@ -100,6 +100,7 @@ const App = () => {
           element={<StudentDashboard />}
           loader={() => requireAuth("student")}
         >
+          <Route index element={<SMyCourses />} />
           <Route path="smycourses" element={<SMyCourses />} />
           <Route path="sessions" element={<Sessions />} />
           <Route path="assignments" element={<Assignments />} />
@@ -110,7 +111,11 @@ const App = () => {
         {/* ---------- 404 ---------- */}
         <Route
           path="*"
-          element={<div className="text-center p-5">404 | Page Not Found</div>}
+          element={
+            <div className="text-center p-5 text-xl font-semibold text-gray-600">
+              404 | Page Not Found
+            </div>
+          }
         />
       </>
     )

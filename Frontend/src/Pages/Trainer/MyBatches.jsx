@@ -1,6 +1,7 @@
+// src/pages/Trainer/Batches.jsx
 import React, { useEffect, useState } from "react";
 import "../../index.css";
-import TrainerService from "../../services/trainerService";
+import lmsService from "../../services/lmsService";
 
 const Batches = () => {
   const trainerId = parseInt(localStorage.getItem("trainerId"), 10);
@@ -10,50 +11,54 @@ const Batches = () => {
   const [newBatch, setNewBatch] = useState("");
 
   useEffect(() => {
-    TrainerService.getCourses()
-      .then((res) => setCourses(res || []))
-      .catch(() => setCourses([]));
-
+    loadCourses();
     if (trainerId) loadBatches();
   }, [trainerId]);
 
+  const loadCourses = async () => {
+    try {
+      const res = await lmsService.getAllCourses();
+      setCourses(res.data || []);
+    } catch (err) {
+      console.error("Error loading courses:", err);
+      setCourses([]);
+    }
+  };
+
   const loadBatches = async () => {
     try {
-      const res = await TrainerService.getBatchesForTrainer(trainerId);
-      setBatches(res || []);
-    } catch {
+      const res = await lmsService.getBatchesForTrainer(trainerId);
+      setBatches(res.data || []);
+    } catch (err) {
+      console.error("Error loading batches:", err);
       setBatches([]);
     }
   };
 
   const handleAddBatch = async () => {
-  try {
-    if (!selectedCourse || !newBatch.trim()) {
-      alert("Please select a course and enter batch name");
-      return;
+    try {
+      if (!selectedCourse || !newBatch.trim()) {
+        alert("Please select a course and enter batch name");
+        return;
+      }
+
+      const payload = {
+        name: newBatch,
+        courseId: parseInt(selectedCourse, 10),
+        trainerId: trainerId,
+      };
+
+      console.log("📦 Sending Batch Payload:", payload);
+      await lmsService.addBatch(payload);
+
+      alert("✅ Batch added successfully!");
+      setNewBatch("");
+      loadBatches();
+    } catch (err) {
+      console.error("❌ Error adding batch:", err);
+      alert("Failed to add batch. Check console for details.");
     }
-
-    const payload = {
-      name: newBatch,
-      courseId: parseInt(selectedCourse, 10),
-      trainerId: trainerId,
-    };
-
-    console.log("📦 Sending Batch Payload:", payload);
-
-    await TrainerService.addBatch(payload);
-
-    alert("✅ Batch added successfully!");
-    setNewBatch("");
-    loadBatches();
-  } catch (err) {
-    console.error("❌ Error adding batch:", err);
-    alert("Failed to add batch. Check console for details.");
-  }
-};
-
-
-
+  };
 
   return (
     <div className="batches-container">
@@ -68,7 +73,7 @@ const Batches = () => {
           <option value="">Select Course</option>
           {courses.map((c) => (
             <option key={c.id} value={c.id}>
-              {c.title}
+              {c.course_name}
             </option>
           ))}
         </select>
@@ -93,7 +98,7 @@ const Batches = () => {
           <ul>
             {batches.map((b) => (
               <li key={b.id}>
-                {b.name} — <strong>{b.course?.title}</strong>
+                {b.name} — <strong>{b.course?.course_name}</strong>
               </li>
             ))}
           </ul>
@@ -104,6 +109,7 @@ const Batches = () => {
 };
 
 export default Batches;
+
 
 
 

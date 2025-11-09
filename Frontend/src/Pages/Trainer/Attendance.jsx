@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "../../index.css";
-import TrainerService from "../../services/trainerService";
+import lmsService from "../../services/lmsService";
 
 const Attendance = () => {
   const trainerId = localStorage.getItem("trainerId");

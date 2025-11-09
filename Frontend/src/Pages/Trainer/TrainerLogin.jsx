@@ -1,105 +1,110 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { trainerLogin, trainerSignup } from "../../Services/lmsService";
-
+import { Eye, EyeOff } from "lucide-react";
+import { trainerLogin } from "../../services/lmsService";
 import "../../index.css";
 
 const TrainerLogin = () => {
-  const [isSignIn, setIsSignIn] = useState(true);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // ✅ Handle input changes
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // ✅ Submit login form
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
     try {
-      if (isSignIn) {
-        const res = await trainerLogin({ email, password }); // ✅ use trainerLogin
-        if (res.data?.token) {
-          alert("✅ Trainer login successful!");
-          navigate("/trainer");
-        } else {
-          alert(res.data?.message || "❌ Invalid credentials!");
-        }
-      } else {
-        if (password !== confirmPassword) {
-          alert("⚠️ Passwords do not match!");
-          return;
-        }
+      const response = await trainerLogin(formData);
+      const trainer = response.data;
 
-        const res = await trainerSignup({ email, password }); // ✅ use trainerSignup
-        alert(res.data?.message || "✅ Signup successful!");
-        setIsSignIn(true);
-        setEmail("");
-        setPassword("");
-        setConfirmPassword("");
+      if (!trainer || !trainer.id) {
+        throw new Error("Invalid trainer data from server");
       }
-    } catch (err) {
-      alert(err.response?.data?.message || "⚠️ Something went wrong!");
+
+      // ✅ Store trainer info
+      localStorage.setItem("trainerId", trainer.id);
+      localStorage.setItem("trainerName", trainer.name);
+      localStorage.setItem("trainerEmail", trainer.email);
+
+      alert("✅ Login successful!");
+      navigate("/trainer");
+    } catch (error) {
+      console.error("Trainer login error:", error);
+
+      // 🧠 Handle HTTP errors more clearly
+      if (error.response && error.response.status === 401) {
+        alert("❌ Invalid email or password.");
+      } else if (error.response) {
+        alert(`⚠️ Server Error (${error.response.status}): ${error.response.data}`);
+      } else {
+        alert("❌ Unable to connect to server. Please check your backend.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2 className="login-title">
-          {isSignIn ? "Trainer Sign In" : "Trainer Sign Up"}
-        </h2>
+        <h2 className="login-title">Trainer Login</h2>
 
         <form onSubmit={handleSubmit} className="login-form">
+          {/* Email */}
           <input
             type="email"
+            name="email"
             placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             className="login-input"
             required
+            disabled={loading}
           />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="login-input"
-            required
-          />
-          {!isSignIn && (
+
+          {/* Password */}
+          <div style={{ position: "relative" }}>
             <input
-              type="password"
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
               className="login-input"
+              style={{ paddingRight: "32px" }}
               required
+              disabled={loading}
             />
-          )}
-          <button type="submit" className="login-btn">
-            {isSignIn ? "Sign In" : "Sign Up"}
+            <span
+              onClick={() => setShowPassword((prev) => !prev)}
+              style={{
+                position: "absolute",
+                right: "8px",
+                top: "8px",
+                cursor: "pointer",
+                color: "#555",
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
+          </div>
+
+          {/* Submit */}
+          <button type="submit" className="login-btn" disabled={loading}>
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
-
-        <p className="login-toggle-text">
-          {isSignIn ? "Don't have an account?" : "Already have an account?"}{" "}
-          <span
-            className="login-toggle-link"
-            onClick={() => {
-              setIsSignIn(!isSignIn);
-              setEmail("");
-              setPassword("");
-              setConfirmPassword("");
-            }}
-          >
-            {isSignIn ? "Sign Up" : "Sign In"}
-          </span>
-        </p>
       </div>
     </div>
   );
 };
 
 export default TrainerLogin;
-
-
 

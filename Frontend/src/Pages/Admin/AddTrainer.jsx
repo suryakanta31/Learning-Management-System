@@ -22,49 +22,59 @@ const AddTrainer = () => {
   });
   const [editedTrainer, setEditedTrainer] = useState({});
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const res = await lmsService.getAllTrainers();
-        setTrainers(res.data || []);
-      } catch (err) {
-        console.error("Error loading trainers:", err);
-      }
-    })();
-  }, []);
-
-  // === HANDLERS ===
-  const handleInput = (e) => {
-    const { name, value } = e.target;
-    setNewTrainer({ ...newTrainer, [name]: value });
+  // === FETCH TRAINERS ===
+  const loadTrainers = async () => {
+    try {
+      const res = await lmsService.getAllTrainers();
+      setTrainers(res.data || []);
+    } catch (err) {
+      console.error("❌ Error loading trainers:", err);
+      alert("Failed to fetch trainers. Please check backend connection.");
+    }
   };
 
+  useEffect(() => {
+    loadTrainers();
+  }, []);
+
+  // === ADD TRAINER ===
   const handleAddTrainer = async () => {
+    const adminId = localStorage.getItem("adminId");
+
+    if (!adminId) {
+      alert("⚠️ Admin not logged in! Please log in again.");
+      return;
+    }
+
     if (!newTrainer.name || !newTrainer.email || !newTrainer.password) {
       alert("Please fill Name, Email & Password");
       return;
     }
-    try {
-      const adminId = localStorage.getItem("adminId");
-      const res = await lmsService.addTrainer(adminId, newTrainer);
-      setTrainers((prev) => [res.data, ...prev]);
-      updateStat && updateStat("trainers", "increment");
 
-      setNewTrainer({
-        name: "",
-        email: "",
-        password: "",
-        phone: "",
-        skill: "",
-        experience: "",
-        qualification: "",
-      });
-      setShowForm(false);
+    try {
+      const res = await lmsService.addTrainer(adminId, newTrainer);
+      if (res.data) {
+        alert("✅ Trainer added successfully!");
+        setTrainers((prev) => [res.data, ...prev]);
+        setNewTrainer({
+          name: "",
+          email: "",
+          password: "",
+          phone: "",
+          skill: "",
+          experience: "",
+          qualification: "",
+        });
+        setShowForm(false);
+        updateStat && updateStat("trainers", "increment");
+      }
     } catch (err) {
-      console.error("Error adding trainer:", err);
+      console.error("❌ Error adding trainer:", err);
+      alert(err.response?.data?.message || "Failed to add trainer.");
     }
   };
 
+  // === EDIT TRAINER ===
   const handleEditRow = (trainer) => {
     setEditRowId(trainer.id);
     setEditedTrainer({ ...trainer });
@@ -77,15 +87,19 @@ const AddTrainer = () => {
 
   const handleSaveRow = async () => {
     try {
-      await lmsService.updateTrainer(editRowId, editedTrainer);
-      setTrainers((prev) =>
-        prev.map((t) => (t.id === editRowId ? editedTrainer : t))
-      );
+      const res = await lmsService.updateTrainer(editRowId, editedTrainer);
+      if (res.data) {
+        alert("✅ Trainer updated successfully!");
+        setTrainers((prev) =>
+          prev.map((t) => (t.id === editRowId ? res.data : t))
+        );
+      }
       setEditRowId(null);
       setEditedTrainer({});
       fetchStats && fetchStats();
     } catch (err) {
-      console.error("Error updating trainer:", err);
+      console.error("❌ Error updating trainer:", err);
+      alert(err.response?.data?.message || "Failed to update trainer.");
     }
   };
 
@@ -94,7 +108,13 @@ const AddTrainer = () => {
     setEditedTrainer({});
   };
 
-  // === UI ===
+  // === INPUT HANDLER ===
+  const handleInput = (e) => {
+    const { name, value } = e.target;
+    setNewTrainer({ ...newTrainer, [name]: value });
+  };
+
+  // === RENDER ===
   return (
     <div className="page-container trainer-page">
       {/* ===== Header Section ===== */}
@@ -111,7 +131,7 @@ const AddTrainer = () => {
         </div>
       </div>
 
-      {/* ===== Add Form ===== */}
+      {/* ===== Add Trainer Form ===== */}
       {showForm && (
         <div className="add-form">
           <input
@@ -174,15 +194,17 @@ const AddTrainer = () => {
             onChange={handleInput}
           />
 
-          <button className="btn btn-primary" onClick={handleAddTrainer}>
-            <Save size={16} /> Add
-          </button>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setShowForm(false)}
-          >
-            <X size={16} /> Cancel
-          </button>
+          <div style={{ display: "flex", gap: "10px" }}>
+            <button className="btn btn-primary" onClick={handleAddTrainer}>
+              <Save size={16} /> Add
+            </button>
+            <button
+              className="btn btn-secondary"
+              onClick={() => setShowForm(false)}
+            >
+              <X size={16} /> Cancel
+            </button>
+          </div>
         </div>
       )}
 
@@ -315,7 +337,10 @@ const AddTrainer = () => {
                       >
                         <Edit size={14} /> Edit
                       </button>
-                      <button className="btn btn-danger" disabled>
+                      <button
+                        className="btn btn-danger"
+                        onClick={() => alert("⚠️ Delete not implemented yet")}
+                      >
                         <Trash2 size={14} /> Delete
                       </button>
                     </td>
@@ -331,6 +356,15 @@ const AddTrainer = () => {
 };
 
 export default AddTrainer;
+
+
+
+
+
+
+
+
+
 
 
 

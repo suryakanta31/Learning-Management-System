@@ -17,12 +17,16 @@ const AdminLogin = () => {
       const res = await adminLogin({ email, password });
 
       if (res.data) {
-        // ✅ Store admin info
-        localStorage.setItem("adminToken", res.data.token || "dummyToken");
-        localStorage.setItem("adminName", res.data.name || "Admin");
+        const admin = res.data;
+
+        // ✅ Store all admin details in localStorage
+        localStorage.setItem("adminId", admin.id); // critical for Trainer add API
+        localStorage.setItem("adminName", admin.name);
+        localStorage.setItem("adminEmail", admin.email);
+        localStorage.setItem("adminToken", admin.token || "dummyToken");
 
         alert("✅ Admin login successful!");
-        navigate("/admin"); // Redirect to dashboard
+        navigate("/admin"); // Redirect to Admin Dashboard
       } else {
         alert("❌ Invalid credentials!");
       }

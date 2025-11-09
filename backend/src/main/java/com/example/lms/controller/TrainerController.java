@@ -1,11 +1,11 @@
 package com.example.lms.controller;
 
-import com.example.lms.entity.Admin;
-import com.example.lms.entity.Trainer;
-import com.example.lms.repository.AdminRepository;
-import com.example.lms.repository.TrainerRepository;
+import com.example.lms.entity.*;
+import com.example.lms.repository.*;
 import com.example.lms.service.TrainerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -14,57 +14,114 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:5173")
 public class TrainerController {
 
-    @Autowired
-    private TrainerService trainerService;
+    @Autowired private TrainerService trainerService;
+    @Autowired private AdminRepository adminRepository;
+    @Autowired private CourseRepository courseRepository;
+    @Autowired private BatchRepository batchRepository;
+    @Autowired private SessionRepository sessionRepository;
+    @Autowired private TrainerRepository trainerRepository;
 
-    @Autowired
-    private AdminRepository adminRepository;
-
-    @Autowired
-    private TrainerRepository trainerRepository;
-
-    // ✅ Admin adds a trainer
+    // ✅ Admin adds trainer
     @PostMapping("/add/{adminId}")
-    public Trainer addTrainer(@PathVariable Long adminId, @RequestBody Trainer trainer) {
-        Admin admin = adminRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + adminId));
-        return trainerService.addTrainer(trainer, admin);
+    public ResponseEntity<?> addTrainer(@PathVariable Long adminId, @RequestBody Trainer trainer) {
+        try {
+            Admin admin = adminRepository.findById(adminId)
+                    .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + adminId));
+
+            Trainer savedTrainer = trainerService.addTrainer(trainer, admin);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedTrainer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("❌ Failed to add trainer: " + e.getMessage());
+        }
     }
 
-    // ✅ Trainer signup (optional, if self-registration is allowed)
+    // ✅ Trainer signup
     @PostMapping("/signup")
-    public Trainer signup(@RequestBody Trainer trainer) {
-        return trainerRepository.save(trainer);
+    public ResponseEntity<?> signup(@RequestBody Trainer trainer) {
+        try {
+            Trainer saved = trainerService.saveTrainer(trainer);
+            return ResponseEntity.status(HttpStatus.CREATED).body(saved);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("❌ Signup failed: " + e.getMessage());
+        }
     }
 
     // ✅ Trainer login
     @PostMapping("/login")
-    public Trainer login(@RequestBody Trainer loginRequest) {
-        Trainer trainer = trainerRepository.findByEmail(loginRequest.getEmail())
-                .orElseThrow(() -> new RuntimeException("Trainer not found with email: " + loginRequest.getEmail()));
-
-        if (!trainer.getPassword().equals(loginRequest.getPassword())) {
-            throw new RuntimeException("Invalid credentials");
+    public ResponseEntity<?> login(@RequestBody Trainer loginRequest) {
+        try {
+            Trainer trainer = trainerService.login(loginRequest.getEmail(), loginRequest.getPassword());
+            return ResponseEntity.ok(trainer);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("❌ Invalid email or password. Please try again.");
         }
-        return trainer;
     }
 
-    // ✅ Fetch all trainers (⚠️ removed trailing slash for consistency)
+    // ✅ Get all trainers
     @GetMapping
-    public List<Trainer> getAllTrainers() {
-        return trainerService.getAllTrainers();
+    public ResponseEntity<List<Trainer>> getAllTrainers() {
+        List<Trainer> trainers = trainerService.getAllTrainers();
+        return ResponseEntity.ok(trainers);
     }
 
-    // ✅ Update trainer info
+    // ✅ Update trainer details
     @PutMapping("/update/{id}")
-    public Trainer updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
-        return trainerService.updateTrainer(id, trainer);
+    public ResponseEntity<?> updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
+        try {
+            Trainer updated = trainerService.updateTrainer(id, trainer);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("❌ Trainer not found: " + e.getMessage());
+        }
     }
 
     // ✅ Delete trainer
     @DeleteMapping("/{id}")
-    public void deleteTrainer(@PathVariable Long id) {
-        trainerService.deleteTrainer(id);
+    public ResponseEntity<?> deleteTrainer(@PathVariable Long id) {
+        try {
+            trainerService.deleteTrainer(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("❌ Trainer not found: " + e.getMessage());
+        }
+    }
+
+    // ✅ Get trainer’s assigned courses
+    @GetMapping("/{trainerId}/courses")
+    public ResponseEntity<?> getCoursesByTrainer(@PathVariable Long trainerId) {
+        List<Course> courses = courseRepository.findByTrainerId(trainerId);
+        if (courses == null || courses.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("⚠️ No courses found for trainer ID: " + trainerId);
+        }
+        return ResponseEntity.ok(courses);
+    }
+
+    // ✅ Get trainer’s assigned batches
+    @GetMapping("/{trainerId}/batches")
+    public ResponseEntity<?> getBatchesByTrainer(@PathVariable Long trainerId) {
+        List<Batch> batches = batchRepository.findByTrainerId(trainerId);
+        if (batches == null || batches.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("⚠️ No batches found for trainer ID: " + trainerId);
+        }
+        return ResponseEntity.ok(batches);
+    }
+
+    // ✅ Get trainer’s assigned sessions
+    @GetMapping("/{trainerId}/sessions")
+    public ResponseEntity<?> getSessionsByTrainer(@PathVariable Long trainerId) {
+        Trainer trainer = trainerRepository.findById(trainerId)
+                .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + trainerId));
+
+        List<Session> sessions = sessionRepository.findByTrainer(trainer);
+        if (sessions == null || sessions.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("⚠️ No sessions found for trainer ID: " + trainerId);
+        }
+        return ResponseEntity.ok(sessions);
     }
 }
-

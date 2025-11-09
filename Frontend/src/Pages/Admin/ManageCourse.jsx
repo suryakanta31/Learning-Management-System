@@ -166,4 +166,3 @@ const ManageCourse = () => {
 
 export default ManageCourse;
 
-
