@@ -826,7 +826,7 @@ body {
   transform: translateY(-2px);
 }
 
-/* Trainer Page Theme (Blue) */
+/* ========= Page Themes ========= */
 .trainer-page .toggle-form-btn,
 .trainer-page .add-toggle button {
   background-color: #2563eb;
@@ -836,7 +836,6 @@ body {
   background-color: #1e40af;
 }
 
-/* Course Page Theme (Orange) */
 .course-page .toggle-form-btn,
 .course-page .add-toggle button {
   background-color: #f97316;
@@ -846,7 +845,6 @@ body {
   background-color: #ea580c;
 }
 
-/* Batch Page Theme (Green) */
 .batch-page .toggle-form-btn,
 .batch-page .add-toggle button {
   background-color: #16a34a;
@@ -866,7 +864,6 @@ body {
   background-color: #f9fafb;
   padding: 20px;
   border-radius: 12px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06);
   margin-bottom: 25px;
   animation: fadeIn 0.4s ease;
 }
@@ -881,8 +878,8 @@ body {
   border: 1px solid #d1d5db;
   border-radius: 8px;
   font-size: 0.9rem;
-  transition: all 0.25s ease;
   background-color: #fff;
+  transition: all 0.25s ease;
 }
 
 .add-form input:focus,
@@ -961,7 +958,7 @@ body {
   margin-top: 10px;
   overflow-x: auto;
   border-radius: 10px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 table {
@@ -997,7 +994,6 @@ tr:nth-child(even) {
 
 tr:hover {
   background-color: #eef2ff;
-  transition: 0.25s;
 }
 
 /* ========= Action Buttons in Table ========= */
@@ -1100,10 +1096,6 @@ td .btn {
   }
 }
 
-
-/* ======================== 
- Reports and Analytics Page Styles
-
 */
 /* =======================
    🔹 Reports Page Styling
@@ -1150,4 +1142,83 @@ td .btn {
   .charts-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+
+
+/* Reports Table */
+.reports-container {
+  padding: 20px;
+  max-width: 900px;
+  margin: auto;
+  background: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.reports-title {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.report-table th {
+  background-color: #2ebfaf;
+  color: white;
+  font-weight: bold;
+}
+
+.report-table input {
+  width: 100%;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Add Report Form */
+.add-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.add-report-form h3 {
+  margin-bottom: 10px;
+}
+
+.add-report-form input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.add-report-form button {
+  background-color: #2ebfaf;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+.add-report-form button:hover {
+  background-color: #26a194;
 }

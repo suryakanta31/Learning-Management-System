@@ -1,5 +1,6 @@
+// src/Pages/Trainer/TrainerDashboard.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -9,75 +10,67 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import {
-  BookOpen,
-  Layers,
-  FileText,
-  LogOut,
-  ChevronDown,
-  ChevronUp,
-  LayoutDashboard,
-  Calendar,
-} from "lucide-react";
-import axios from "axios";
+import { FileText, LogOut, ChevronDown, ChevronUp, BookOpen } from "lucide-react";
+import lmsService from "../../services/lmsService";
 import "../../index.css";
 
-// ✅ Reusable Stat Card
-const StatCard = ({ title, count, color, bgColor }) => (
-  <div className="stat-card" style={{ background: bgColor }}>
-    <h6 className="stat-title">{title}</h6>
-    <h3 className={`stat-count ${color}`}>{count}</h3>
+// ✅ Stat Card
+const StatCard = ({ title, count, bgColor }) => (
+  <div
+    className="stat-card"
+    style={{
+      background: bgColor,
+      padding: "20px",
+      borderRadius: "10px",
+      textAlign: "center",
+      flex: 1,
+      boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+    }}
+  >
+    <h6 className="stat-title" style={{ fontSize: "14px", marginBottom: "8px" }}>
+      {title}
+    </h6>
+    <h3 style={{ fontSize: "24px", color: "#2f3b52", fontWeight: "bold" }}>{count}</h3>
   </div>
 );
 
 const TrainerDashboard = () => {
   const navigate = useNavigate();
-  const [trainerName, setTrainerName] = useState("Trainer");
+  const location = useLocation();
   const [trainerId, setTrainerId] = useState(null);
+  const [trainerName, setTrainerName] = useState("Trainer");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState({});
-  const [stats, setStats] = useState({ courses: 0, batches: 0, sessions: 0 });
+  const [stats, setStats] = useState({ reports: 0 });
 
   // ✅ Load trainer info from localStorage
   useEffect(() => {
     const storedId = localStorage.getItem("trainerId");
     const storedName = localStorage.getItem("trainerName");
-
     if (!storedId || isNaN(parseInt(storedId))) {
       localStorage.clear();
       navigate("/trainerlogin");
       return;
     }
-
     setTrainerId(parseInt(storedId));
     setTrainerName(storedName || "Trainer");
   }, [navigate]);
 
-  // ✅ Fetch courses, batches, sessions stats
-  const fetchStats = useCallback(async () => {
+  // ✅ Fetch reports dynamically
+  const fetchReports = useCallback(async () => {
     if (!trainerId) return;
-
     try {
-      const [coursesRes, batchesRes, sessionsRes] = await Promise.all([
-        axios.get(`http://localhost:8080/api/trainers/${trainerId}/courses`),
-        axios.get(`http://localhost:8080/api/trainers/${trainerId}/batches`),
-        axios.get(`http://localhost:8080/api/trainers/${trainerId}/sessions`),
-      ]);
-
-      setStats({
-        courses: coursesRes.data?.length || 0,
-        batches: batchesRes.data?.length || 0,
-        sessions: sessionsRes.data?.length || 0,
-      });
+      const res = await lmsService.getTrainerReports(trainerId);
+      setStats({ reports: res.data?.length || 0 });
     } catch (err) {
-      console.error("Error fetching trainer stats:", err);
-      setStats({ courses: 0, batches: 0, sessions: 0 });
+      console.error("Error fetching reports:", err);
+      setStats({ reports: 0 });
     }
   }, [trainerId]);
 
   useEffect(() => {
-    fetchStats();
-  }, [fetchStats]);
+    fetchReports();
+  }, [fetchReports]);
 
   // ✅ Logout
   const handleLogout = () => {
@@ -85,34 +78,12 @@ const TrainerDashboard = () => {
     navigate("/trainerlogin");
   };
 
-  // Toggle dropdown menus
+  // ✅ Dropdown toggle
   const toggleDropdown = (key) =>
     setDropdownOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  // Sidebar menu
+  // ✅ Sidebar menu (only Reports)
   const menuItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/trainer" },
-    {
-      label: "My Courses",
-      icon: <BookOpen size={18} />,
-      key: "courses",
-      dropdown: [{ label: "View Courses", path: "/trainer/courses" }],
-    },
-    {
-      label: "My Batches",
-      icon: <Layers size={18} />,
-      key: "batches",
-      dropdown: [{ label: "View Batches", path: "/trainer/batches" }],
-    },
-    {
-      label: "Sessions / Schedule",
-      icon: <Calendar size={18} />,
-      key: "sessions",
-      dropdown: [
-        { label: "View Sessions", path: "/trainer/sessions" },
-        { label: "Add Session", path: "/trainer/sessions/add" },
-      ],
-    },
     {
       label: "Reports",
       icon: <FileText size={18} />,
@@ -121,15 +92,12 @@ const TrainerDashboard = () => {
     },
   ];
 
-  // Chart data
-  const chartData = [
-    { name: "Courses", total: stats.courses },
-    { name: "Batches", total: stats.batches },
-    { name: "Sessions", total: stats.sessions },
-  ];
+  const isActive = (path) => location.pathname === path;
+
+  const chartData = [{ name: "Reports", total: stats.reports }];
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" style={{ display: "flex", height: "100vh" }}>
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
         <button className="toggle-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
@@ -148,7 +116,12 @@ const TrainerDashboard = () => {
             <li key={idx}>
               {item.dropdown ? (
                 <>
-                  <div className="menu-item" onClick={() => toggleDropdown(item.key)}>
+                  <div
+                    className={`menu-item ${
+                      item.dropdown.some((sub) => isActive(sub.path)) ? "active" : ""
+                    }`}
+                    onClick={() => toggleDropdown(item.key)}
+                  >
                     <span className="icon">{item.icon}</span>
                     {sidebarOpen && <span>{item.label}</span>}
                     {sidebarOpen && (
@@ -161,7 +134,10 @@ const TrainerDashboard = () => {
                     <ul className="submenu">
                       {item.dropdown.map((sub, subIdx) => (
                         <li key={subIdx}>
-                          <Link to={sub.path} className="submenu-item">
+                          <Link
+                            to={sub.path}
+                            className={`submenu-item ${isActive(sub.path) ? "active" : ""}`}
+                          >
                             {sub.label}
                           </Link>
                         </li>
@@ -169,12 +145,7 @@ const TrainerDashboard = () => {
                     </ul>
                   )}
                 </>
-              ) : (
-                <Link to={item.path} className="menu-item">
-                  <span className="icon">{item.icon}</span>
-                  {sidebarOpen && <span>{item.label}</span>}
-                </Link>
-              )}
+              ) : null}
             </li>
           ))}
         </ul>
@@ -190,8 +161,8 @@ const TrainerDashboard = () => {
         {/* Header */}
         <div className="header">
           <div className="header-left">
-            <BookOpen size={24} color="#2f3b52" />
-            <h3>Dashboard</h3>
+            <FileText size={24} color="#2f3b52" />
+            <h3>Trainer Dashboard</h3>
           </div>
           <div className="header-right">
             <div className="trainer-logo">{trainerName.charAt(0).toUpperCase()}</div>
@@ -199,16 +170,22 @@ const TrainerDashboard = () => {
           </div>
         </div>
 
-        {/* Stats Cards + Chart */}
+        {/* Reports Stats & Chart */}
         <div className="stats-chart">
-          <div className="stats-cards">
-            <StatCard title="My Courses" count={stats.courses} color="primary" bgColor="#E8F8F5" />
-            <StatCard title="My Batches" count={stats.batches} color="success" bgColor="#EAF3FC" />
-            <StatCard title="My Sessions" count={stats.sessions} color="warning" bgColor="#FFF7E6" />
+          <div className="stats-cards" style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+            <StatCard title="My Reports" count={stats.reports} bgColor="#E8F8F5" />
           </div>
 
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height={200}>
+          <div
+            className="chart-container"
+            style={{
+              background: "#fff",
+              padding: "20px",
+              borderRadius: "10px",
+              boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+            }}
+          >
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={chartData} barCategoryGap="30%">
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -220,9 +197,9 @@ const TrainerDashboard = () => {
           </div>
         </div>
 
-        {/* Nested Pages */}
-        <div className="child-outlet">
-          <Outlet context={{ fetchStats }} />
+        {/* Child Outlet */}
+        <div className="child-outlet" style={{ marginTop: "20px" }}>
+          <Outlet context={{ fetchReports }} />
         </div>
       </main>
     </div>
@@ -230,3 +207,8 @@ const TrainerDashboard = () => {
 };
 
 export default TrainerDashboard;
+
+
+
+
+

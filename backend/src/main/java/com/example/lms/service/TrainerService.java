@@ -2,67 +2,58 @@ package com.example.lms.service;
 
 import com.example.lms.entity.Admin;
 import com.example.lms.entity.Trainer;
+import com.example.lms.repository.CourseRepository;
 import com.example.lms.repository.TrainerRepository;
+import com.example.lms.repository.BatchRepository;
+import com.example.lms.repository.SessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
 public class TrainerService {
 
-    @Autowired
-    private TrainerRepository trainerRepository;
+    @Autowired private TrainerRepository trainerRepository;
+    @Autowired private CourseRepository courseRepository;
+    @Autowired private BatchRepository batchRepository;
+    @Autowired private SessionRepository sessionRepository;
 
-    // ✅ Admin adds a trainer (linked to Admin)
+    // ✅ Add trainer (admin linked)
     public Trainer addTrainer(Trainer trainer, Admin admin) {
         if (trainerRepository.existsByEmail(trainer.getEmail())) {
             throw new RuntimeException("Email already exists: " + trainer.getEmail());
         }
-        trainer.setAdmin(admin); // link trainer to admin
+        trainer.setAdmin(admin);
         return trainerRepository.save(trainer);
     }
 
-    // ✅ Trainer self-signup (independent registration)
+    // ✅ Trainer signup (independent)
     public Trainer saveTrainer(Trainer trainer) {
         if (trainerRepository.existsByEmail(trainer.getEmail())) {
             throw new RuntimeException("Email already registered: " + trainer.getEmail());
         }
-
-        // Basic validation
-        if (trainer.getPassword() == null || trainer.getPassword().trim().isEmpty()) {
+        if (trainer.getPassword() == null || trainer.getPassword().trim().isEmpty())
             throw new RuntimeException("Password cannot be empty");
-        }
-
-        if (trainer.getName() == null || trainer.getName().trim().isEmpty()) {
+        if (trainer.getName() == null || trainer.getName().trim().isEmpty())
             throw new RuntimeException("Trainer name is required");
-        }
 
         return trainerRepository.save(trainer);
     }
 
-    // ✅ Trainer login validation
+    // ✅ Login
     public Trainer login(String email, String password) {
         Trainer trainer = trainerRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Trainer not found with email: " + email));
-
-        if (!trainer.getPassword().equals(password)) {
-            throw new RuntimeException("Invalid password");
-        }
-
+        if (!trainer.getPassword().equals(password)) throw new RuntimeException("Invalid password");
         return trainer;
     }
 
-    // ✅ Fetch all trainers
-    public List<Trainer> getAllTrainers() {
-        return trainerRepository.findAll();
-    }
-
-    // ✅ Update trainer details
+    // ✅ Update trainer
     public Trainer updateTrainer(Long id, Trainer updatedTrainer) {
         Trainer existing = trainerRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + id));
 
-        // Update only fields that are provided
         if (updatedTrainer.getName() != null) existing.setName(updatedTrainer.getName());
         if (updatedTrainer.getEmail() != null) existing.setEmail(updatedTrainer.getEmail());
         if (updatedTrainer.getPassword() != null) existing.setPassword(updatedTrainer.getPassword());
@@ -74,11 +65,29 @@ public class TrainerService {
         return trainerRepository.save(existing);
     }
 
-    // ✅ Delete trainer by ID
+    // ✅ Delete trainer
     public void deleteTrainer(Long id) {
-        if (!trainerRepository.existsById(id)) {
-            throw new RuntimeException("Trainer not found with ID: " + id);
-        }
+        if (!trainerRepository.existsById(id)) throw new RuntimeException("Trainer not found with ID: " + id);
         trainerRepository.deleteById(id);
+    }
+
+    // ✅ Fetch all trainers
+    public List<Trainer> getAllTrainers() {
+        return trainerRepository.findAll();
+    }
+
+    // ✅ Fetch all courses of a trainer
+    public List<?> getTrainerCourses(Long trainerId) {
+        return courseRepository.findCoursesByTrainerId(trainerId);
+    }
+
+    // ✅ Fetch all batches of a trainer
+    public List<?> getTrainerBatches(Long trainerId) {
+        return batchRepository.findBatchesByTrainerId(trainerId);
+    }
+
+    // ✅ Fetch all sessions of a trainer
+    public List<?> getTrainerSessions(Long trainerId) {
+        return sessionRepository.findSessionsByTrainerId(trainerId);
     }
 }

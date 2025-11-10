@@ -1,4 +1,3 @@
-// src/services/lmsService.js
 import api from "./api";
 
 // ====================
@@ -14,25 +13,38 @@ export const updateTrainer = (id, data) =>
   api.put(`/api/trainers/update/${id}`, data);
 export const deleteTrainer = (id) => api.delete(`/api/trainers/${id}`);
 
-// ✅ Trainer-related endpoints (for trainer dashboard)
+// ====================
+// ✅ Trainer Dashboard APIs
+// ====================
 export const getTrainerCourses = (trainerId) =>
   api.get(`/api/trainers/${trainerId}/courses`);
+
 export const getTrainerBatches = (trainerId) =>
   api.get(`/api/trainers/${trainerId}/batches`);
+
 export const getTrainerSessions = (trainerId) =>
   api.get(`/api/trainers/${trainerId}/sessions`);
 
-// ✅ Alias for compatibility with Batches.jsx
+export const addTrainerSession = (data) => api.post(`/api/sessions`, data);
+
+// ====================
+// ✅ Trainer Reports APIs
+// ====================
+export const getTrainerReports = (trainerId) =>
+  api.get(`/api/trainer-reports/${trainerId}/reports`);
+
+export const addTrainerReport = (trainerId, data) =>
+  api.post(`/api/trainer-reports/${trainerId}/reports`, data);
+
+// Alias for Batches page
 export const getBatchesForTrainer = (trainerId) =>
   api.get(`/api/trainers/${trainerId}/batches`);
-
 
 // ====================
 // 🔹 Admin Auth
 // ====================
 export const adminSignup = (data) => api.post("/api/admins/signup", data);
 export const adminLogin = (data) => api.post("/api/admins/login", data);
-
 
 // ====================
 // 🔹 Courses CRUD
@@ -43,30 +55,24 @@ export const updateCourse = (id, data) =>
   api.put(`/api/courses/${id}`, data);
 export const deleteCourse = (id) => api.delete(`/api/courses/${id}`);
 
-
 // ====================
 // 🔹 Batches CRUD
 // ====================
 export const addBatch = (data) => api.post("/api/batches", data);
 export const getAllBatches = () => api.get("/api/batches");
-export const updateBatch = (id, data) =>
-  api.put(`/api/batches/${id}`, data);
+export const updateBatch = (id, data) => api.put(`/api/batches/${id}`, data);
 export const deleteBatch = (id) => api.delete(`/api/batches/${id}`);
 
-
 // ====================
-// 🔹 Reports
+// 🔹 Reports (Admin & Trainer)
 // ====================
 export const getCoursePerformance = () =>
   api.get("/reports/course-performance");
-export const getTrainerWorkload = () =>
-  api.get("/reports/trainer-workload");
-export const getBatchSummary = () =>
-  api.get("/reports/batch-summary");
-
+export const getTrainerWorkload = () => api.get("/reports/trainer-workload");
+export const getBatchSummary = () => api.get("/reports/batch-summary");
 
 // ====================
-// ✅ Default Export (All in one place)
+// ✅ Default Export
 // ====================
 export default {
   // Trainers
@@ -79,7 +85,10 @@ export default {
   getTrainerCourses,
   getTrainerBatches,
   getTrainerSessions,
-  getBatchesForTrainer, // ✅ Added alias for trainer batches
+  addTrainerSession,
+  getTrainerReports,
+  addTrainerReport,
+  getBatchesForTrainer,
 
   // Admins
   adminSignup,
@@ -102,3 +111,4 @@ export default {
   getTrainerWorkload,
   getBatchSummary,
 };
+

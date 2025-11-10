@@ -19,14 +19,19 @@ import ManageBatches from "./Pages/Admin/ManageBatches";
 import ManageCourse from "./Pages/Admin/ManageCourse";
 import ReportsAnalytics from "./Pages/Admin/ReportsAnalytics";
 
+// Admin View Pages
+import ViewTrainers from "./Pages/Admin/ViewTrainers";
+import ViewCourses from "./Pages/Admin/ViewCourses";
+import ViewBatches from "./Pages/Admin/ViewBatches";
+
 // Trainer
 import TrainerLogin from "./Pages/Trainer/TrainerLogin";
 import TrainerDashboard from "./Pages/Trainer/TrainerDashboard";
 import MyCourses from "./Pages/Trainer/MyCourses";
 import MyBatches from "./Pages/Trainer/MyBatches";
-import Attendance from "./Pages/Trainer/Attendance";
-import Feedback from "./Pages/Trainer/Feedback";
-import Schedule from "./Pages/Trainer/Schedule";
+import TrainerSessions from "./Pages/Trainer/TrainerSessions";
+import AddSession from "./Pages/Trainer/AddSession";
+import TrainerReports from "./Pages/Trainer/TrainerReports";
 
 // Student
 import StudentLogin from "./Pages/Student/StudentLogin";
@@ -41,7 +46,8 @@ import TrainerFeedback from "./Pages/Student/TrainerFeedback";
 import Contact from "./Pages/Contact";
 import Rootlayout from "./Layout/Rootlayout";
 
-// ✅ Role-based authentication (no JWT, checks localStorage IDs)
+
+// ✅ Role-based authentication
 const requireAuth = (role) => {
   const adminId = localStorage.getItem("adminId");
   const trainerId = localStorage.getItem("trainerId");
@@ -72,11 +78,13 @@ const App = () => {
           element={<AdminDashboard />}
           loader={() => requireAuth("admin")}
         >
-          <Route index element={<AddTrainer />} />
           <Route path="addtrainer" element={<AddTrainer />} />
           <Route path="addstudent" element={<AddStudent />} />
-          <Route path="managecourse" element={<ManageCourse />} />
-          <Route path="managebatches" element={<ManageBatches />} />
+          <Route path="addcourse" element={<ManageCourse />} />
+          <Route path="addbatch" element={<ManageBatches />} />
+          <Route path="viewtrainers" element={<ViewTrainers />} />
+          <Route path="viewcourses" element={<ViewCourses />} />
+          <Route path="viewbatches" element={<ViewBatches />} />
           <Route path="reportsanalytics" element={<ReportsAnalytics />} />
         </Route>
 
@@ -89,9 +97,9 @@ const App = () => {
           <Route index element={<MyCourses />} />
           <Route path="mycourses" element={<MyCourses />} />
           <Route path="mybatches" element={<MyBatches />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="feedback" element={<Feedback />} />
-          <Route path="schedule" element={<Schedule />} />
+          <Route path="trainersessions" element={<TrainerSessions />} />
+          <Route path="sessions/add" element={<AddSession />} />
+          <Route path="reports" element={<TrainerReports />} />
         </Route>
 
         {/* ---------- Student Dashboard ---------- */}
@@ -125,3 +133,4 @@ const App = () => {
 };
 
 export default App;
+

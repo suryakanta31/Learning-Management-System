@@ -1,5 +1,6 @@
+// src/Pages/Admin/AdminDashboard.jsx
 import React, { useEffect, useState, useCallback } from "react";
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -9,7 +10,17 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { BarChart3, Users, BookOpen, Layers, FileText, LogOut, ChevronDown, ChevronUp, LayoutDashboard } from "lucide-react";
+import {
+  BarChart3,
+  Users,
+  BookOpen,
+  Layers,
+  FileText,
+  LogOut,
+  ChevronDown,
+  ChevronUp,
+  LayoutDashboard,
+} from "lucide-react";
 import axios from "axios";
 import "../../index.css";
 
@@ -22,6 +33,7 @@ const StatCard = ({ title, count, color, bgColor }) => (
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [adminName, setAdminName] = useState("Admin");
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState({});
@@ -57,9 +69,7 @@ const AdminDashboard = () => {
   const updateStat = (type, action = "increment") => {
     setStats((prev) => {
       const newValue =
-        action === "increment"
-          ? prev[type] + 1
-          : Math.max(prev[type] - 1, 0);
+        action === "increment" ? prev[type] + 1 : Math.max(prev[type] - 1, 0);
       return { ...prev, [type]: newValue };
     });
     setTimeout(fetchStats, 500);
@@ -68,6 +78,7 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("adminToken");
     localStorage.removeItem("adminName");
+    localStorage.removeItem("adminId");
     navigate("/adminlogin");
   };
 
@@ -75,25 +86,35 @@ const AdminDashboard = () => {
     setDropdownOpen((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Sidebar menu
   const menuItems = [
     { label: "Dashboard", icon: <LayoutDashboard size={18} />, path: "/admin" },
     {
       label: "Trainers",
       icon: <Users size={18} />,
       key: "trainers",
-      dropdown: [{ label: "Manage Trainers", path: "/admin/addtrainer" }],
+      dropdown: [
+        { label: "Add Trainer", path: "/admin/addtrainer" },
+        { label: "View Trainers", path: "/admin/viewtrainers" },
+      ],
     },
     {
       label: "Courses",
       icon: <BookOpen size={18} />,
       key: "courses",
-      dropdown: [{ label: "Manage Courses", path: "/admin/managecourse" }],
+      dropdown: [
+        { label: "Add Course", path: "/admin/addcourse" },
+        { label: "View Courses", path: "/admin/viewcourses" },
+      ],
     },
     {
       label: "Batches",
       icon: <Layers size={18} />,
       key: "batches",
-      dropdown: [{ label: "Manage Batches", path: "/admin/managebatches" }],
+      dropdown: [
+        { label: "Add Batch", path: "/admin/addbatch" },
+        { label: "View Batches", path: "/admin/viewbatches" },
+      ],
     },
     {
       label: "Reports",
@@ -102,6 +123,9 @@ const AdminDashboard = () => {
       dropdown: [{ label: "View Reports", path: "/admin/reportsanalytics" }],
     },
   ];
+
+  // Active page detection
+  const isActive = (path) => location.pathname === path;
 
   const chartData = [
     { name: "Trainers", total: stats.trainers },
@@ -129,7 +153,7 @@ const AdminDashboard = () => {
             <li key={idx}>
               {item.dropdown ? (
                 <>
-                  <div className="menu-item" onClick={() => toggleDropdown(item.key)}>
+                  <div className={`menu-item ${item.dropdown.some(sub => isActive(sub.path)) ? "active" : ""}`} onClick={() => toggleDropdown(item.key)}>
                     <span className="icon">{item.icon}</span>
                     {sidebarOpen && <span>{item.label}</span>}
                     {sidebarOpen && (
@@ -142,7 +166,10 @@ const AdminDashboard = () => {
                     <ul className="submenu">
                       {item.dropdown.map((sub, subIdx) => (
                         <li key={subIdx}>
-                          <Link to={sub.path} className="submenu-item">
+                          <Link
+                            to={sub.path}
+                            className={`submenu-item ${isActive(sub.path) ? "active" : ""}`}
+                          >
                             {sub.label}
                           </Link>
                         </li>
@@ -151,7 +178,7 @@ const AdminDashboard = () => {
                   )}
                 </>
               ) : (
-                <Link to={item.path} className="menu-item">
+                <Link to={item.path} className={`menu-item ${isActive(item.path) ? "active" : ""}`}>
                   <span className="icon">{item.icon}</span>
                   {sidebarOpen && <span>{item.label}</span>}
                 </Link>
@@ -168,19 +195,19 @@ const AdminDashboard = () => {
 
       {/* Main Section */}
       <main className={`main ${sidebarOpen ? "ml-open" : "ml-closed"}`}>
+        {/* Header */}
         <div className="header">
           <div className="header-left">
             <BarChart3 size={24} color="#2f3b52" />
-            <h3>Dashboard</h3>
+            <h3>Admin Dashboard</h3>
           </div>
           <div className="header-right">
-            <div className="admin-logo">
-              {adminName.charAt(0).toUpperCase()}
-            </div>
+            <div className="admin-logo">{adminName.charAt(0).toUpperCase()}</div>
             <span>{adminName}</span>
           </div>
         </div>
 
+        {/* Stats & Chart always visible */}
         <div className="stats-chart">
           <div className="stats-cards">
             <StatCard title="Total Trainers" count={stats.trainers} color="primary" bgColor="#E8F8F5" />
@@ -201,6 +228,7 @@ const AdminDashboard = () => {
           </div>
         </div>
 
+        {/* Child Routes */}
         <div className="child-outlet">
           <Outlet context={{ fetchStats, updateStat }} />
         </div>
@@ -210,6 +238,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
-
-

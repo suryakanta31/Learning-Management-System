@@ -61,19 +61,17 @@ public class TrainerController {
     // ✅ Get all trainers
     @GetMapping
     public ResponseEntity<List<Trainer>> getAllTrainers() {
-        List<Trainer> trainers = trainerService.getAllTrainers();
-        return ResponseEntity.ok(trainers);
+        return ResponseEntity.ok(trainerService.getAllTrainers());
     }
 
-    // ✅ Update trainer details
+    // ✅ Update trainer
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateTrainer(@PathVariable Long id, @RequestBody Trainer trainer) {
         try {
             Trainer updated = trainerService.updateTrainer(id, trainer);
             return ResponseEntity.ok(updated);
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("❌ Trainer not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ Trainer not found: " + e.getMessage());
         }
     }
 
@@ -84,41 +82,40 @@ public class TrainerController {
             trainerService.deleteTrainer(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("❌ Trainer not found: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("❌ Trainer not found: " + e.getMessage());
         }
     }
 
-    // ✅ Get trainer’s assigned courses
+    // ✅ Trainer courses
     @GetMapping("/{trainerId}/courses")
     public ResponseEntity<?> getCoursesByTrainer(@PathVariable Long trainerId) {
         List<Course> courses = courseRepository.findByTrainerId(trainerId);
-        if (courses == null || courses.isEmpty()) {
+        if (courses.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("⚠️ No courses found for trainer ID: " + trainerId);
         }
         return ResponseEntity.ok(courses);
     }
 
-    // ✅ Get trainer’s assigned batches
+    // ✅ Trainer batches
     @GetMapping("/{trainerId}/batches")
     public ResponseEntity<?> getBatchesByTrainer(@PathVariable Long trainerId) {
         List<Batch> batches = batchRepository.findByTrainerId(trainerId);
-        if (batches == null || batches.isEmpty()) {
+        if (batches.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("⚠️ No batches found for trainer ID: " + trainerId);
         }
         return ResponseEntity.ok(batches);
     }
 
-    // ✅ Get trainer’s assigned sessions
+    // ✅ Trainer sessions
     @GetMapping("/{trainerId}/sessions")
     public ResponseEntity<?> getSessionsByTrainer(@PathVariable Long trainerId) {
         Trainer trainer = trainerRepository.findById(trainerId)
                 .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + trainerId));
 
         List<Session> sessions = sessionRepository.findByTrainer(trainer);
-        if (sessions == null || sessions.isEmpty()) {
+        if (sessions.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("⚠️ No sessions found for trainer ID: " + trainerId);
         }
