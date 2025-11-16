@@ -16,7 +16,7 @@ const AddTrainer = () => {
     email: "",
     password: "",
     phone: "",
-    skill: "",
+    subject: "",
     experience: "",
     qualification: "",
   });
@@ -46,8 +46,13 @@ const AddTrainer = () => {
       return;
     }
 
-    if (!newTrainer.name || !newTrainer.email || !newTrainer.password) {
-      alert("Please fill Name, Email & Password");
+    if (
+      !newTrainer.name ||
+      !newTrainer.email ||
+      !newTrainer.password ||
+      !newTrainer.subject
+    ) {
+      alert("Please fill Name, Email, Password & Subject Name");
       return;
     }
 
@@ -61,7 +66,7 @@ const AddTrainer = () => {
           email: "",
           password: "",
           phone: "",
-          skill: "",
+          subject: "",
           experience: "",
           qualification: "",
         });
@@ -176,9 +181,9 @@ const AddTrainer = () => {
             onChange={handleInput}
           />
           <input
-            name="skill"
-            placeholder="Skill"
-            value={newTrainer.skill}
+            name="subject"
+            placeholder="Subject Name *"
+            value={newTrainer.subject}
             onChange={handleInput}
           />
           <input
@@ -221,7 +226,7 @@ const AddTrainer = () => {
                 <th>Email</th>
                 <th>Password</th>
                 <th>Phone</th>
-                <th>Skill</th>
+                <th>Subject Name</th>
                 <th>Experience</th>
                 <th>Qualification</th>
                 <th>Action</th>
@@ -287,8 +292,8 @@ const AddTrainer = () => {
                     <td>
                       <input
                         type="text"
-                        name="skill"
-                        value={editedTrainer.skill || ""}
+                        name="subject"
+                        value={editedTrainer.subject || ""}
                         onChange={handleEditChange}
                       />
                     </td>
@@ -327,7 +332,7 @@ const AddTrainer = () => {
                     <td>{t.email}</td>
                     <td>••••••</td>
                     <td>{t.phone || "-"}</td>
-                    <td>{t.skill || "-"}</td>
+                    <td>{t.subject || "-"}</td>
                     <td>{t.experience || "-"}</td>
                     <td>{t.qualification || "-"}</td>
                     <td>
@@ -356,6 +361,7 @@ const AddTrainer = () => {
 };
 
 export default AddTrainer;
+
 
 
 

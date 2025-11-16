@@ -27,7 +27,6 @@ public class TrainerController {
         try {
             Admin admin = adminRepository.findById(adminId)
                     .orElseThrow(() -> new RuntimeException("Admin not found with ID: " + adminId));
-
             Trainer savedTrainer = trainerService.addTrainer(trainer, admin);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedTrainer);
         } catch (RuntimeException e) {
@@ -121,4 +120,20 @@ public class TrainerController {
         }
         return ResponseEntity.ok(sessions);
     }
+    // Get subject(s) of a trainer
+@GetMapping("/{trainerId}/subjects")
+public ResponseEntity<?> getSubjectsByTrainer(@PathVariable Long trainerId) {
+    Trainer trainer = trainerRepository.findById(trainerId)
+            .orElseThrow(() -> new RuntimeException("Trainer not found with ID: " + trainerId));
+
+    // Assuming each trainer has only one subject as String
+    String subject = trainer.getSubject();
+    if (subject == null || subject.trim().isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body("⚠️ No subject found for trainer ID: " + trainerId);
+    }
+
+    return ResponseEntity.ok(List.of(subject)); // return as List for frontend compatibility
+}
+
 }

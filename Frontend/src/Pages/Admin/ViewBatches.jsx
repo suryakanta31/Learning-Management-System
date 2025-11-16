@@ -26,7 +26,7 @@ const ViewBatches = () => {
           <tr>
             <th>#</th>
             <th>Batch Name</th>
-            <th>Course</th>
+            <th>Subject</th>
             <th>Trainer</th>
             <th>Start Date</th>
             <th>End Date</th>
@@ -44,7 +44,7 @@ const ViewBatches = () => {
               <tr key={b.id}>
                 <td>{idx + 1}</td>
                 <td>{b.batchName}</td>
-                <td>{b.course?.courseName || "-"}</td>
+                <td>{b.subjectName || "-"}</td>
                 <td>{b.trainer?.name || "-"}</td>
                 <td>{b.startDate || "-"}</td>
                 <td>{b.endDate || "-"}</td>

@@ -3,6 +3,10 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "http://localhost:8080", // ✅ backend base URL
+  headers: {
+    "Content-Type": "application/json", // ✅ Ensure JSON is always sent
+    Accept: "application/json",
+  },
 });
 
 api.interceptors.request.use(

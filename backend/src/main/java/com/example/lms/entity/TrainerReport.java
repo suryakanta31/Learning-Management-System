@@ -1,35 +1,37 @@
 package com.example.lms.entity;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "batches")
-public class Batch {
+public class TrainerReport {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private Long trainerId;     // stored as number
+    private Long batchId;       // stored as number
+
     private String batchName;
-    private String subjectName; // Optional: match trainer's subject
+    private String subjectName;
+
     private String startDate;
     private String endDate;
 
-    @ManyToOne
-    @JoinColumn(name = "trainer_id")
-    private Trainer trainer;
+    private LocalDateTime reportDateTime; // NEW: Date + Time
 
-    public Batch() {}
-
-    public Batch(String batchName, String subjectName, String startDate, String endDate, Trainer trainer) {
-        this.batchName = batchName;
-        this.subjectName = subjectName;
-        this.startDate = startDate;
-        this.endDate = endDate;
-        this.trainer = trainer;
-    }
+    // Getters & Setters
 
     public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getTrainerId() { return trainerId; }
+    public void setTrainerId(Long trainerId) { this.trainerId = trainerId; }
+
+    public Long getBatchId() { return batchId; }
+    public void setBatchId(Long batchId) { this.batchId = batchId; }
+
     public String getBatchName() { return batchName; }
     public void setBatchName(String batchName) { this.batchName = batchName; }
 
@@ -42,6 +44,6 @@ public class Batch {
     public String getEndDate() { return endDate; }
     public void setEndDate(String endDate) { this.endDate = endDate; }
 
-    public Trainer getTrainer() { return trainer; }
-    public void setTrainer(Trainer trainer) { this.trainer = trainer; }
+    public LocalDateTime getReportDateTime() { return reportDateTime; }
+    public void setReportDateTime(LocalDateTime reportDateTime) { this.reportDateTime = reportDateTime; }
 }

@@ -1148,77 +1148,168 @@ td .btn {
 
 
 /* Reports Table */
+/* ============================
+   Trainer Reports – Modern UI
+   ============================ */
+
+/* ===== Container ===== */
 .reports-container {
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
-  background: #f9f9f9;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 35px;
+  max-width: 1100px;
+  margin: 40px auto;
+  background: #f8fafc;
+  border-radius: 14px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
+  font-family: 'Poppins', sans-serif;
 }
 
+/* ===== Title ===== */
 .reports-title {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 35px;
+  font-size: 28px;
+  color: #1e293b;
+  font-weight: 600;
+  letter-spacing: 0.5px;
 }
 
-.report-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 20px;
-}
-
-.report-table th,
-.report-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: center;
-}
-
-.report-table th {
-  background-color: #2ebfaf;
-  color: white;
-  font-weight: bold;
-}
-
-.report-table input {
-  width: 100%;
-  padding: 4px 6px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-}
-
-/* Add Report Form */
+/* =====================
+   Modern Add Report Form
+   ===================== */
 .add-report-form {
+  background: white;
+  padding: 28px;
+  border-radius: 14px;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  background: #fff;
-  padding: 20px;
-  border-radius: 10px;
+  gap: 18px;
+  margin-bottom: 30px;
+  transition: transform 0.25s ease;
+}
+
+.add-report-form:hover {
+  transform: translateY(-3px);
 }
 
 .add-report-form h3 {
   margin-bottom: 10px;
+  font-size: 22px;
+  color: #1e293b;
+  font-weight: 600;
 }
 
-.add-report-form input {
-  padding: 8px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
+/* Inputs */
+.add-report-form input,
+.add-report-form select {
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 15px;
+  background: #f8fafc;
+  transition: all 0.3s ease;
 }
 
+.add-report-form input:focus,
+.add-report-form select:focus {
+  outline: none;
+  border-color: #22c1b2;
+  background: white;
+  box-shadow: 0 0 5px rgba(34, 193, 178, 0.4);
+}
+
+/* Button */
 .add-report-form button {
-  background-color: #2ebfaf;
+  background: linear-gradient(135deg, #22c1b2, #1aa394);
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 6px;
+  padding: 14px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 16px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
+  letter-spacing: 0.4px;
+  transition: 0.25s ease;
 }
 
 .add-report-form button:hover {
-  background-color: #26a194;
+  background: linear-gradient(135deg, #1aa394, #178778);
+  transform: translateY(-3px);
+}
+
+/* =====================
+   Table
+   ===================== */
+.report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+}
+
+.report-table th {
+  background: #22c1b2;
+  color: white;
+  padding: 14px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  border-radius: 10px;
+}
+
+.report-table tr {
+  background: white;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: 0.2s ease;
+}
+
+.report-table tr:hover {
+  transform: scale(1.01);
+}
+
+.report-table td {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #334155;
+}
+
+/* Inputs inside table (if any future editing) */
+.report-table td input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.report-table td input:focus {
+  outline: none;
+  border-color: #22c1b2;
+  box-shadow: 0 0 4px rgba(34, 193, 178, 0.3);
+}
+
+/* =====================
+   Responsive UI
+   ===================== */
+@media (max-width: 768px) {
+  .reports-container {
+    padding: 20px;
+  }
+
+  .reports-title {
+    font-size: 22px;
+  }
+
+  .add-report-form {
+    padding: 20px;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
 }

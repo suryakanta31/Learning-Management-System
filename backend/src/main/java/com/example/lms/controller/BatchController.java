@@ -33,4 +33,9 @@ public class BatchController {
     public void deleteBatch(@PathVariable Long id) {
         batchService.deleteBatch(id);
     }
+
+    @GetMapping("/trainer/{trainerId}")
+    public List<Batch> getBatchesByTrainer(@PathVariable Long trainerId) {
+        return batchService.getBatchesByTrainer(trainerId);
+    }
 }
